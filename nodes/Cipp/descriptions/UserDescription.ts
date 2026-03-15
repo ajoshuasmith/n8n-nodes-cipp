@@ -19,6 +19,18 @@ export const userOperations: INodeProperties[] = [
 				action: 'Add a user',
 			},
 			{
+				name: 'Add Guest',
+				value: 'addGuest',
+				description: 'Add a guest user to the tenant',
+				action: 'Add a guest user',
+			},
+			{
+				name: 'Bulk License',
+				value: 'bulkLicense',
+				description: 'Apply license changes in bulk',
+				action: 'Bulk license assignment',
+			},
+			{
 				name: 'Clear Immutable ID',
 				value: 'clearImmutableId',
 				description: 'Clear the immutable ID for a user',
@@ -61,6 +73,12 @@ export const userOperations: INodeProperties[] = [
 				action: 'Get many users',
 			},
 			{
+				name: 'List Per-User MFA',
+				value: 'listPerUserMfa',
+				description: 'List per-user MFA settings for the tenant',
+				action: 'List per user MFA',
+			},
+			{
 				name: 'List Inactive Accounts',
 				value: 'listInactiveAccounts',
 				description: 'List accounts with no recent sign-in activity',
@@ -77,6 +95,48 @@ export const userOperations: INodeProperties[] = [
 				value: 'listMfaUsers',
 				description: 'List users with their MFA status',
 				action: 'List MFA users',
+			},
+			{
+				name: 'List User CA Policies',
+				value: 'listUserCAPolicies',
+				description: 'List conditional access policies applied to a user',
+				action: 'List user CA policies',
+			},
+			{
+				name: 'List User Counts',
+				value: 'listUserCounts',
+				description: 'Get user count statistics for a tenant',
+				action: 'List user counts',
+			},
+			{
+				name: 'List User Devices',
+				value: 'listUserDevices',
+				description: 'List devices registered to a user',
+				action: 'List user devices',
+			},
+			{
+				name: 'List User Groups',
+				value: 'listUserGroups',
+				description: 'List groups a user belongs to',
+				action: 'List user groups',
+			},
+			{
+				name: 'List User Mailbox Details',
+				value: 'listUserMailboxDetails',
+				description: 'Get mailbox details for a user',
+				action: 'List user mailbox details',
+			},
+			{
+				name: 'List User Photo',
+				value: 'listUserPhoto',
+				description: 'Get the profile photo for a user',
+				action: 'List user photo',
+			},
+			{
+				name: 'List User Settings',
+				value: 'listUserSettings',
+				description: 'Get account settings for a user',
+				action: 'List user settings',
 			},
 			{
 				name: 'List Sign-Ins',
@@ -126,6 +186,12 @@ export const userOperations: INodeProperties[] = [
 				description: 'Set per-user MFA state',
 				action: 'Set per user mfa',
 			},
+			{
+				name: 'Set User Photo',
+				value: 'setUserPhoto',
+				description: 'Set the profile photo for a user',
+				action: 'Set user photo',
+			},
 		],
 		default: 'getAll',
 	},
@@ -173,7 +239,7 @@ export const userFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['getAll', 'listInactiveAccounts', 'listSignIns', 'listMfaUsers', 'listJitAdmin'],
+				operation: ['getAll', 'listInactiveAccounts', 'listSignIns', 'listMfaUsers', 'listJitAdmin', 'listUserDevices', 'listUserGroups', 'listUserMailboxDetails', 'listUserPhoto', 'listUserCAPolicies', 'listUserSettings', 'listPerUserMfa', 'listUserCounts'],
 			},
 		},
 		default: false,
@@ -186,7 +252,7 @@ export const userFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['getAll', 'listInactiveAccounts', 'listSignIns', 'listMfaUsers', 'listJitAdmin'],
+				operation: ['getAll', 'listInactiveAccounts', 'listSignIns', 'listMfaUsers', 'listJitAdmin', 'listUserDevices', 'listUserGroups', 'listUserMailboxDetails', 'listUserPhoto', 'listUserCAPolicies', 'listUserSettings', 'listPerUserMfa', 'listUserCounts'],
 				returnAll: [false],
 			},
 		},
@@ -212,6 +278,12 @@ export const userFields: INodeProperties[] = [
 					'dismissRiskyUser',
 					'enable',
 					'execJitAdmin',
+					'listUserDevices',
+					'listUserGroups',
+					'listUserMailboxDetails',
+					'listUserPhoto',
+					'listUserCAPolicies',
+					'listUserSettings',
 					'resetMfa',
 					'resetPassword',
 					'revokeSessions',
@@ -220,6 +292,7 @@ export const userFields: INodeProperties[] = [
 					'createTap',
 					'sendMfaPush',
 					'setPerUserMfa',
+					'setUserPhoto',
 				],
 			},
 		},
@@ -588,5 +661,68 @@ export const userFields: INodeProperties[] = [
 				description: 'OData filter query to filter which users are returned',
 			},
 		],
+	},
+
+	// Add Guest fields
+	{
+		displayName: 'Display Name',
+		name: 'guestDisplayName',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['addGuest'],
+			},
+		},
+		default: '',
+		description: 'The display name of the guest user',
+	},
+	{
+		displayName: 'Email',
+		name: 'guestMail',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['addGuest'],
+			},
+		},
+		default: '',
+		placeholder: 'e.g. guest@external.com',
+		description: 'The email address of the guest user to invite',
+	},
+
+	// Set User Photo fields
+	{
+		displayName: 'Photo (Base64)',
+		name: 'photo',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['setUserPhoto'],
+			},
+		},
+		default: '',
+		description: 'The photo data encoded as a Base64 string',
+	},
+
+	// Bulk License fields
+	{
+		displayName: 'License JSON',
+		name: 'licenseJson',
+		type: 'json',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['bulkLicense'],
+			},
+		},
+		default: '{}',
+		description: 'JSON object containing license assignment details',
 	},
 ];

@@ -69,9 +69,24 @@ export class Cipp implements INodeType {
 						description: 'Manage CIPP backups',
 					},
 					{
+						name: 'Conditional Access',
+						value: 'conditionalAccess',
+						description: 'Manage conditional access policies and named locations',
+					},
+					{
 						name: 'Device',
 						value: 'device',
 						description: 'Manage Intune devices',
+					},
+					{
+						name: 'Email Security',
+						value: 'emailSecurity',
+						description: 'Manage spam filters, transport rules, connectors, and email security policies',
+					},
+					{
+						name: 'Exchange Resource',
+						value: 'exchangeResource',
+						description: 'Manage Exchange rooms, equipment, and room lists',
 					},
 					{
 						name: 'GDAP',
@@ -87,6 +102,11 @@ export class Cipp implements INodeType {
 						name: 'Identity',
 						value: 'identity',
 						description: 'Manage audit logs, roles, and deleted items',
+					},
+					{
+						name: 'Intune',
+						value: 'intune',
+						description: 'Manage Intune scripts, compliance policies, assignment filters, and reusable settings',
 					},
 					{
 						name: 'Mailbox',
@@ -109,9 +129,24 @@ export class Cipp implements INodeType {
 						description: 'Manage quarantined email messages',
 					},
 					{
+						name: 'Safe Links',
+						value: 'safeLinks',
+						description: 'Manage Safe Links policies and templates',
+					},
+					{
 						name: 'Scheduled Item',
 						value: 'scheduledItem',
 						description: 'Manage scheduled jobs',
+					},
+					{
+						name: 'SharePoint',
+						value: 'sharepoint',
+						description: 'Manage SharePoint sites, quotas, and settings',
+					},
+					{
+						name: 'Standards',
+						value: 'standards',
+						description: 'Manage tenant standards, drift, BPA, and domain analyser',
 					},
 					{
 						name: 'Team',
@@ -122,6 +157,11 @@ export class Cipp implements INodeType {
 						name: 'Teams Shift',
 						value: 'teamsShift',
 						description: 'Manage Teams Shifts schedule — shifts, open shifts, groups, time off',
+					},
+					{
+						name: 'Testing',
+						value: 'testing',
+						description: 'Manage test runs, test reports, and available tests',
 					},
 					{
 						name: 'Tenant',
@@ -708,6 +748,162 @@ export class Cipp implements INodeType {
 							},
 							{},
 						);
+					} else if (operation === 'listUserDevices') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListUserDevices',
+							{},
+							{ tenantFilter, userId },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listUserGroups') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListUserGroups',
+							{},
+							{ tenantFilter, userId },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listUserMailboxDetails') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListUserMailboxDetails',
+							{},
+							{ tenantFilter, UserID: userId },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listUserPhoto') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListUserPhoto',
+							{},
+							{ tenantFilter, userId },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listUserCAPolicies') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListUserConditionalAccessPolicies',
+							{},
+							{ tenantFilter, userId },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listUserSettings') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListUserSettings',
+							{},
+							{ tenantFilter, userId },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listPerUserMfa') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListPerUserMFA',
+							{},
+							{ tenantFilter },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listUserCounts') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListUserCounts',
+							{},
+							{ tenantFilter },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'addGuest') {
+						const displayName = this.getNodeParameter('guestDisplayName', i) as string;
+						const mail = this.getNodeParameter('guestMail', i) as string;
+						responseData = await cippApiRequest.call(
+							this,
+							'POST',
+							'/api/AddGuest',
+							{
+								tenantFilter,
+								displayName,
+								mail,
+							},
+							{},
+						);
+					} else if (operation === 'setUserPhoto') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const photo = this.getNodeParameter('photo', i) as string;
+						responseData = await cippApiRequest.call(
+							this,
+							'POST',
+							'/api/ExecSetUserPhoto',
+							{
+								tenantFilter,
+								userId,
+								photo,
+							},
+							{},
+						);
+					} else if (operation === 'bulkLicense') {
+						const licenseJson = this.getNodeParameter('licenseJson', i) as string;
+						let parsedLicense: IDataObject;
+						try {
+							parsedLicense = JSON.parse(typeof licenseJson === 'string' ? licenseJson : '{}') as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'License JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(
+							this,
+							'POST',
+							'/api/ExecBulkLicense',
+							{
+								...parsedLicense,
+								tenantFilter,
+							},
+							{},
+						);
 					}
 				}
 
@@ -825,6 +1021,128 @@ export class Cipp implements INodeType {
 							},
 							{},
 						);
+					}
+				}
+
+				// ==================== CONDITIONAL ACCESS ====================
+				else if (resource === 'conditionalAccess') {
+					const tenantFilter = getTenantFilter();
+
+					if (operation === 'listPolicies') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListConditionalAccessPolicies', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listTemplates') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListCAtemplates', {}, {});
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listNamedLocations') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListNamedLocations', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addPolicy') {
+						const policyJson = this.getNodeParameter('caPolicyJson', i) as string;
+						const caState = this.getNodeParameter('caState', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddCAPolicy', {
+							tenantFilter: { value: [tenantFilter] },
+							RawJSON: policyJson,
+							NewState: caState || 'donotchange',
+						}, {});
+					} else if (operation === 'editPolicy') {
+						const policyId = this.getNodeParameter('policyId', i) as string;
+						const editState = this.getNodeParameter('editCaState', i) as string;
+						const body: IDataObject = {
+							tenantFilter,
+							GUID: policyId,
+						};
+						if (editState) body.State = editState;
+						const editJson = this.getNodeParameter('editPolicyJson', i) as string;
+						let editData: IDataObject;
+						try {
+							editData = JSON.parse(editJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
+						}
+						if (editData.displayName) body.newDisplayName = editData.displayName as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditCAPolicy', body, {});
+					} else if (operation === 'removePolicy') {
+						const policyId = this.getNodeParameter('policyId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveCAPolicy', {
+							tenantFilter,
+							GUID: policyId,
+						}, {});
+					} else if (operation === 'addTemplate') {
+						const templateJson = this.getNodeParameter('caTemplateJson', i) as string;
+						let templateData: IDataObject;
+						try {
+							templateData = JSON.parse(templateJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Template JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddCATemplate', {
+							tenantFilter,
+							...templateData,
+						}, {});
+					} else if (operation === 'removeTemplate') {
+						const templateId = this.getNodeParameter('caTemplateId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveCATemplate', {
+							ID: templateId,
+						}, {});
+					} else if (operation === 'caCheck') {
+						const userId = this.getNodeParameter('caCheckUserId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecCACheck', {
+							tenantFilter,
+							userID: { value: userId },
+						}, {});
+					} else if (operation === 'addNamedLocation') {
+						const locationName = this.getNodeParameter('namedLocationName', i) as string;
+						const locationType = this.getNodeParameter('namedLocationType', i) as string;
+						const body: IDataObject = {
+							selectedTenants: { value: [tenantFilter] },
+							policyName: locationName,
+						};
+						if (locationType === 'ip') {
+							const ipRanges = this.getNodeParameter('namedLocationIpRanges', i) as string;
+							const trusted = this.getNodeParameter('namedLocationTrusted', i) as boolean;
+							body.Type = 'IPLocation';
+							body.Ips = ipRanges.split(',').map((r: string) => r.trim()).join('\n');
+							body.Trusted = trusted;
+						} else {
+							const countries = this.getNodeParameter('namedLocationCountries', i) as string;
+							body.Type = 'CountryLocation';
+							body.Countries = { value: countries.split(',').map((c: string) => c.trim()) };
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddNamedLocation', body, {});
+					} else if (operation === 'manageNamedLocation') {
+						const locationId = this.getNodeParameter('namedLocationId', i) as string;
+						const action = this.getNodeParameter('namedLocationAction', i) as string;
+						if (action === 'Delete') {
+							responseData = await cippApiRequest.call(this, 'POST', '/api/ExecNamedLocation', {
+								tenantFilter,
+								namedLocationId: locationId,
+								change: 'Delete',
+							}, {});
+						} else {
+							const locationJson = this.getNodeParameter('namedLocationJson', i) as string;
+							let locationData: IDataObject;
+							try {
+								locationData = JSON.parse(locationJson) as IDataObject;
+							} catch (e) {
+								throw new NodeOperationError(this.getNode(), 'Location JSON must be valid JSON', { itemIndex: i });
+							}
+							responseData = await cippApiRequest.call(this, 'POST', '/api/ExecNamedLocation', {
+								tenantFilter,
+								namedLocationId: locationId,
+								change: 'Update',
+								input: locationData,
+							}, {});
+						}
 					}
 				}
 
@@ -987,62 +1305,444 @@ export class Cipp implements INodeType {
 				// ==================== MAILBOX ====================
 				else if (resource === 'mailbox') {
 					const tenantFilter = getTenantFilter();
-					const userId = this.getNodeParameter('userId', i) as string;
 
-					if (operation === 'convert') {
+					// ---------- List operations (no userId required) ----------
+					if (operation === 'listMailboxes') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListMailboxes', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listMailboxForwarding') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListMailboxForwarding', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listRestrictedUsers') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListRestrictedUsers', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listSharedMailboxStatistics') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharedMailboxStatistics', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listSharedMailboxAccountEnabled') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharedMailboxAccountEnabled', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+
+					// ---------- List operations (userId required) ----------
+					} else if (operation === 'listMailboxDetails') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListUserMailboxDetails', {}, { tenantFilter, UserID: userId });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listMailboxRules') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListMailboxRules', {}, { tenantFilter, userId });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listMailboxMobileDevices') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListMailboxMobileDevices', {}, { tenantFilter, Mailbox: userId });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listMailboxCAS') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListMailboxCAS', {}, { TenantFilter: tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listCalendarPermissions') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListCalendarPermissions', {}, { tenantFilter, UserID: userId });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listContactPermissions') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListContactPermissions', {}, { tenantFilter, UserID: userId });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listOoO') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListOoO', {}, { tenantFilter, userid: userId });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+
+					// ---------- Add Shared Mailbox ----------
+					} else if (operation === 'addSharedMailbox') {
+						const displayName = this.getNodeParameter('displayName', i) as string;
+						const username = this.getNodeParameter('username', i) as string;
+						const domain = this.getNodeParameter('domain', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddSharedMailbox', {
+							tenantID: tenantFilter,
+							displayName,
+							username,
+							domain,
+							...additionalFields,
+						}, {});
+
+					// ---------- Existing operations ----------
+					} else if (operation === 'convert') {
+						const userId = this.getNodeParameter('userId', i) as string;
 						const mailboxType = this.getNodeParameter('mailboxType', i) as string;
-
-						responseData = await cippApiRequest.call(
-							this,
-							'POST',
-							'/api/ExecConvertMailbox',
-							{
-								tenantFilter,
-								ID: userId,
-								MailboxType: mailboxType,
-							},
-							{},
-						);
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecConvertMailbox', {
+							tenantFilter,
+							ID: userId,
+							MailboxType: mailboxType,
+						}, {});
 					} else if (operation === 'enableArchive') {
-						responseData = await cippApiRequest.call(
-							this,
-							'POST',
-							'/api/ExecEnableArchive',
-							{
-								tenantFilter,
-								ID: userId,
-							},
-							{},
-						);
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecEnableArchive', {
+							tenantFilter,
+							ID: userId,
+						}, {});
 					} else if (operation === 'setOutOfOffice') {
+						const userId = this.getNodeParameter('userId', i) as string;
 						const autoReplyState = this.getNodeParameter('autoReplyState', i) as string;
 						const body: IDataObject = {
 							tenantFilter,
 							user: userId,
 							AutoReplyState: autoReplyState,
 						};
-
 						if (autoReplyState === 'Enabled') {
 							body.input = this.getNodeParameter('autoReplyMessage', i) as string;
 						}
-
 						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetOOO', body, {});
 					} else if (operation === 'setForwarding') {
+						const userId = this.getNodeParameter('userId', i) as string;
 						const forwardTo = this.getNodeParameter('forwardTo', i) as string;
 						const keepCopy = this.getNodeParameter('keepCopy', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecEmailForward', {
+							tenantFilter,
+							user: userId,
+							ForwardTo: forwardTo,
+							KeepCopy: keepCopy,
+						}, {});
 
-						responseData = await cippApiRequest.call(
-							this,
-							'POST',
-							'/api/ExecEmailForward',
-							{
-								tenantFilter,
-								user: userId,
-								ForwardTo: forwardTo,
-								KeepCopy: keepCopy,
-							},
-							{},
-						);
+					// ---------- Edit Mailbox Permissions ----------
+					} else if (operation === 'editMailboxPermissions') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const permissions = this.getNodeParameter('permissions', i, {}) as IDataObject;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecEditMailboxPermissions', {
+							tenantfilter: tenantFilter,
+							userID: userId,
+							...permissions,
+						}, {});
+
+					// ---------- Edit Calendar Permissions ----------
+					} else if (operation === 'editCalendarPermissions') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const userToModify = this.getNodeParameter('userToModify', i) as string;
+						const permissionLevel = this.getNodeParameter('permissionLevel', i) as string;
+						const folderName = this.getNodeParameter('folderName', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecEditCalendarPermissions', {
+							tenantFilter,
+							userid: userId,
+							UserToGetPermissions: userToModify,
+							Permissions: permissionLevel,
+							FolderName: folderName,
+						}, {});
+
+					// ---------- Modify Contact Permissions ----------
+					} else if (operation === 'modifyContactPerms') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const contactUserToModify = this.getNodeParameter('contactUserToModify', i) as string;
+						const contactPermissionLevel = this.getNodeParameter('contactPermissionLevel', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecModifyContactPerms', {
+							tenantFilter,
+							UserID: userId,
+							UserToGetPermissions: contactUserToModify,
+							Permissions: contactPermissionLevel,
+						}, {});
+
+					// ---------- Mailbox Rules ----------
+					} else if (operation === 'removeMailboxRule') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const ruleName = this.getNodeParameter('ruleName', i) as string;
+						const ruleId = this.getNodeParameter('ruleId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecRemoveMailboxRule', {
+							TenantFilter: tenantFilter,
+							userPrincipalName: userId,
+							ruleName,
+							ruleId,
+						}, {});
+					} else if (operation === 'setMailboxRule') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const setRuleName = this.getNodeParameter('setRuleName', i) as string;
+						const setRuleId = this.getNodeParameter('setRuleId', i) as string;
+						const ruleAction = this.getNodeParameter('ruleAction', i) as string;
+						const body: IDataObject = {
+							TenantFilter: tenantFilter,
+							userPrincipalName: userId,
+							ruleName: setRuleName,
+							ruleId: setRuleId,
+						};
+						if (ruleAction === 'Enable') {
+							body.Enable = true;
+						} else {
+							body.Disable = true;
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetMailboxRule', body, {});
+
+					// ---------- Set Mailbox Quota ----------
+					} else if (operation === 'setMailboxQuota') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const quotaType = this.getNodeParameter('quotaType', i) as string;
+						const quotaValue = this.getNodeParameter('quotaValue', i) as string;
+						const body: IDataObject = {
+							tenantfilter: tenantFilter,
+							user: userId,
+							quota: quotaValue,
+						};
+						body[quotaType] = true;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetMailboxQuota', body, {});
+
+					// ---------- Set Litigation Hold ----------
+					} else if (operation === 'setLitigationHold') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const enabled = this.getNodeParameter('litigationHoldEnabled', i) as boolean;
+						const body: IDataObject = {
+							tenantFilter,
+							Identity: userId,
+							UPN: userId,
+						};
+						if (!enabled) {
+							body.disable = true;
+						} else {
+							const duration = this.getNodeParameter('litigationHoldDuration', i) as number;
+							if (duration > 0) body.days = duration;
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetLitigationHold', body, {});
+
+					// ---------- Set Mailbox Email Size ----------
+					} else if (operation === 'setMailboxEmailSize') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const maxSendSize = this.getNodeParameter('maxSendSize', i) as number;
+						const maxReceiveSize = this.getNodeParameter('maxReceiveSize', i) as number;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetMailboxEmailSize', {
+							tenantFilter,
+							UPN: userId,
+							id: userId,
+							maxSendSize: String(maxSendSize),
+							maxReceiveSize: String(maxReceiveSize),
+						}, {});
+
+					// ---------- Set Mailbox Locale ----------
+					} else if (operation === 'setMailboxLocale') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const language = this.getNodeParameter('language', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetMailboxLocale', {
+							tenantFilter,
+							user: userId,
+							locale: language,
+						}, {});
+
+					// ---------- Set Retention Hold ----------
+					} else if (operation === 'setRetentionHold') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const enabled = this.getNodeParameter('retentionHoldEnabled', i) as boolean;
+						const retentionBody: IDataObject = {
+							tenantFilter,
+							Identity: userId,
+							UPN: userId,
+						};
+						if (!enabled) {
+							retentionBody.disable = true;
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetRetentionHold', retentionBody, {});
+
+					// ---------- Set Recipient Limits ----------
+					} else if (operation === 'setRecipientLimits') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const recipientLimit = this.getNodeParameter('recipientLimit', i) as number;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetRecipientLimits', {
+							tenantFilter,
+							Identity: userId,
+							userid: userId,
+							recipientLimit,
+						}, {});
+
+					// ---------- Copy for Sent ----------
+					} else if (operation === 'copyForSent') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const enabled = this.getNodeParameter('copyForSentEnabled', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecCopyForSent', {
+							tenantFilter,
+							ID: userId,
+							messageCopyState: String(enabled),
+						}, {});
+
+					// ---------- Hide From GAL ----------
+					} else if (operation === 'hideFromGAL') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const hidden = this.getNodeParameter('hiddenFromGAL', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecHideFromGAL', {
+							tenantFilter,
+							ID: userId,
+							HideFromGAL: String(hidden),
+						}, {});
+
+					// ---------- Manage Mobile Devices ----------
+					} else if (operation === 'mailboxMobileDevices') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const deviceGuid = this.getNodeParameter('deviceGuid', i) as string;
+						const deviceId = this.getNodeParameter('deviceId', i) as string;
+						const mobileAction = this.getNodeParameter('mobileAction', i) as string;
+						const qs: IDataObject = {
+							tenantfilter: tenantFilter,
+							Userid: userId,
+							guid: deviceGuid,
+							deviceid: deviceId,
+						};
+						if (mobileAction === 'Quarantine') {
+							qs.Quarantine = 'true';
+						} else if (mobileAction === 'Delete') {
+							qs.Delete = 'true';
+						}
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ExecMailboxMobileDevices', {}, qs);
+
+					// ---------- Start Managed Folder Assistant ----------
+					} else if (operation === 'startManagedFolderAssistant') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecStartManagedFolderAssistant', {
+							tenantFilter,
+							Id: userId,
+							UserPrincipalName: userId,
+						}, {});
+
+					// ---------- Enable Auto-Expanding Archive ----------
+					} else if (operation === 'enableAutoExpandingArchive') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecEnableAutoExpandingArchive', {
+							tenantFilter,
+							ID: userId,
+							username: userId,
+						}, {});
+
+					// ---------- High Volume Email ----------
+					} else if (operation === 'hveUser') {
+						const hveDisplayName = this.getNodeParameter('hveDisplayName', i) as string;
+						const hvePrimarySMTPAddress = this.getNodeParameter('hvePrimarySMTPAddress', i) as string;
+						const hvePassword = this.getNodeParameter('hvePassword', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecHVEUser', {
+							TenantFilter: tenantFilter,
+							displayName: hveDisplayName,
+							primarySMTPAddress: hvePrimarySMTPAddress,
+							password: hvePassword,
+						}, {});
+
+					// ---------- Schedule Mailbox Vacation ----------
+					} else if (operation === 'scheduleMailboxVacation') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const startDate = this.getNodeParameter('vacationStartDate', i) as string;
+						const endDate = this.getNodeParameter('vacationEndDate', i) as string;
+						const vacationOptions = this.getNodeParameter('vacationOptions', i, {}) as IDataObject;
+						const body: IDataObject = {
+							tenantFilter,
+							mailboxOwners: [{ value: userId }],
+							startDate: new Date(startDate).getTime(),
+							endDate: new Date(endDate).getTime(),
+						};
+						if (vacationOptions.ForwardTo) {
+							body.delegates = [{ value: vacationOptions.ForwardTo }];
+						}
+						if (vacationOptions.KeepCopy !== undefined) body.autoMap = vacationOptions.KeepCopy;
+						if (vacationOptions.CalendarAccessUser) {
+							body.includeCalendar = true;
+							body.calendarPermission = vacationOptions.CalendarPermission || 'Reviewer';
+							body.canViewPrivateItems = false;
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecScheduleMailboxVacation', body, {});
+
+					// ---------- Schedule OOO Vacation ----------
+					} else if (operation === 'scheduleOOOVacation') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const startDate = this.getNodeParameter('oooStartDate', i) as string;
+						const endDate = this.getNodeParameter('oooEndDate', i) as string;
+						const internalMessage = this.getNodeParameter('oooInternalMessage', i) as string;
+						const body: IDataObject = {
+							tenantFilter,
+							Users: [{ value: userId }],
+							startDate: new Date(startDate).getTime(),
+							endDate: new Date(endDate).getTime(),
+							internalMessage,
+						};
+						const externalMessage = this.getNodeParameter('oooExternalMessage', i, '') as string;
+						if (externalMessage) {
+							body.externalMessage = externalMessage;
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecScheduleOOOVacation', body, {});
+
+					// ---------- Manage Retention Policies ----------
+					} else if (operation === 'manageRetentionPolicies') {
+						const action = this.getNodeParameter('retentionPolicyAction', i) as string;
+						if (action === 'List') {
+							responseData = await cippApiRequest.call(this, 'GET', '/api/ExecManageRetentionPolicies', {}, { tenantFilter });
+						} else {
+							const policyName = this.getNodeParameter('retentionPolicyName', i) as string;
+							const body: IDataObject = { tenantFilter };
+							if (action === 'Create') {
+								body.CreatePolicies = [{ Name: policyName }];
+							} else if (action === 'Delete') {
+								body.DeletePolicies = [policyName];
+							}
+							responseData = await cippApiRequest.call(this, 'POST', '/api/ExecManageRetentionPolicies', body, {});
+						}
+
+					// ---------- Manage Retention Tags ----------
+					} else if (operation === 'manageRetentionTags') {
+						const action = this.getNodeParameter('retentionTagAction', i) as string;
+						if (action === 'List') {
+							responseData = await cippApiRequest.call(this, 'GET', '/api/ExecManageRetentionTags', {}, { tenantFilter });
+						} else {
+							const tagName = this.getNodeParameter('retentionTagName', i) as string;
+							const body: IDataObject = { tenantFilter };
+							if (action === 'Create') {
+								body.CreateTags = [{ Name: tagName }];
+							} else if (action === 'Delete') {
+								body.DeleteTags = [tagName];
+							}
+							responseData = await cippApiRequest.call(this, 'POST', '/api/ExecManageRetentionTags', body, {});
+						}
+
+					// ---------- Set Mailbox Retention Policy ----------
+					} else if (operation === 'setMailboxRetentionPolicies') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const policyName = this.getNodeParameter('retentionPolicyToSet', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetMailboxRetentionPolicies', {
+							tenantFilter,
+							PolicyName: policyName,
+							Mailboxes: [userId],
+						}, {});
+
+					// ---------- Remove Restricted User ----------
+					} else if (operation === 'removeRestrictedUser') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecRemoveRestrictedUser', {
+							tenantFilter,
+							SenderAddress: userId,
+						}, {});
 					}
 				}
 
@@ -1603,6 +2303,96 @@ export class Cipp implements INodeType {
 							},
 							{},
 						);
+					}
+				}
+
+				// ==================== SAFE LINKS ====================
+				else if (resource === 'safeLinks') {
+					const tenantFilter = getTenantFilter();
+
+					if (operation === 'listPolicies') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSafeLinksPolicy', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listTemplates') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSafeLinksPolicyTemplates', {}, {});
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addPolicy') {
+						const policyName = this.getNodeParameter('slPolicyName', i) as string;
+						const policyJson = this.getNodeParameter('slPolicyJson', i) as string;
+						let policyData: IDataObject;
+						try {
+							policyData = JSON.parse(policyJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecNewSafeLinksPolicy', {
+							...policyData,
+							tenantFilter,
+							Name: policyName,
+						}, {});
+					} else if (operation === 'editPolicy') {
+						const policyName = this.getNodeParameter('slPolicyName', i) as string;
+						const policyJson = this.getNodeParameter('slPolicyJson', i) as string;
+						let policyData: IDataObject;
+						try {
+							policyData = JSON.parse(policyJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditSafeLinksPolicy', {
+							...policyData,
+							tenantFilter,
+							Name: policyName,
+						}, {});
+					} else if (operation === 'deletePolicy') {
+						const policyName = this.getNodeParameter('slPolicyName', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecDeleteSafeLinksPolicy', {
+							tenantFilter,
+							Name: policyName,
+						}, {});
+					} else if (operation === 'addTemplate') {
+						const templateName = this.getNodeParameter('slTemplateName', i) as string;
+						const templateJson = this.getNodeParameter('slTemplateJson', i) as string;
+						let templateData: IDataObject;
+						try {
+							templateData = JSON.parse(templateJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Template JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddSafeLinksPolicyTemplate', {
+							...templateData,
+							Name: templateName,
+						}, {});
+					} else if (operation === 'editTemplate') {
+						const templateName = this.getNodeParameter('slTemplateName', i) as string;
+						const templateJson = this.getNodeParameter('slTemplateJson', i) as string;
+						let templateData: IDataObject;
+						try {
+							templateData = JSON.parse(templateJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Template JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditSafeLinksPolicyTemplate', {
+							...templateData,
+							Name: templateName,
+						}, {});
+					} else if (operation === 'removeTemplate') {
+						const templateName = this.getNodeParameter('slTemplateName', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveSafeLinksPolicyTemplate', {
+							Name: templateName,
+						}, {});
+					} else if (operation === 'addFromTemplate') {
+						const templateName = this.getNodeParameter('slTemplateName', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddSafeLinksPolicyFromTemplate', {
+							tenantFilter,
+							TemplateName: templateName,
+						}, {});
 					}
 				}
 
@@ -2346,6 +3136,312 @@ export class Cipp implements INodeType {
 					}
 				}
 
+				// ==================== EMAIL SECURITY ====================
+				else if (resource === 'emailSecurity') {
+					const tenantFilter = getTenantFilter();
+
+					if (operation === 'listSpamFilters') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSpamfilter', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addSpamFilter') {
+						const policyJson = this.getNodeParameter('esSpamFilterJson', i) as string;
+						let policyData: IDataObject;
+						try {
+							policyData = JSON.parse(policyJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddSpamFilter', {
+							...policyData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'editSpamFilter') {
+						const policyJson = this.getNodeParameter('esSpamFilterJson', i) as string;
+						let policyData: IDataObject;
+						try {
+							policyData = JSON.parse(policyJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditSpamFilter', {
+							...policyData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'removeSpamFilter') {
+						const name = this.getNodeParameter('esName', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveSpamfilter', {
+							tenantFilter,
+							Name: name,
+						}, {});
+					} else if (operation === 'listTransportRules') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListTransportRules', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addTransportRule') {
+						const ruleJson = this.getNodeParameter('esTransportRuleJson', i) as string;
+						let ruleData: IDataObject;
+						try {
+							ruleData = JSON.parse(ruleJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Rule JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddTransportRule', {
+							...ruleData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'editTransportRule') {
+						const ruleJson = this.getNodeParameter('esTransportRuleJson', i) as string;
+						let ruleData: IDataObject;
+						try {
+							ruleData = JSON.parse(ruleJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Rule JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditTransportRule', {
+							...ruleData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'removeTransportRule') {
+						const name = this.getNodeParameter('esName', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveTransportRule', {
+							tenantFilter,
+							Name: name,
+						}, {});
+					} else if (operation === 'listExchangeConnectors') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListExchangeConnectors', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addExConnector') {
+						const connectorJson = this.getNodeParameter('esConnectorJson', i) as string;
+						let connectorData: IDataObject;
+						try {
+							connectorData = JSON.parse(connectorJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Connector JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddExConnector', {
+							...connectorData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'editExConnector') {
+						const connectorJson = this.getNodeParameter('esConnectorJson', i) as string;
+						let connectorData: IDataObject;
+						try {
+							connectorData = JSON.parse(connectorJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Connector JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditExConnector', {
+							...connectorData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'removeExConnector') {
+						const name = this.getNodeParameter('esName', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveExConnector', {
+							tenantFilter,
+							Name: name,
+						}, {});
+					} else if (operation === 'listConnectionFilters') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListConnectionFilter', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addConnectionFilter') {
+						const filterJson = this.getNodeParameter('esConnectionFilterJson', i) as string;
+						let filterData: IDataObject;
+						try {
+							filterData = JSON.parse(filterJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Filter JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddConnectionFilter', {
+							...filterData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listAntiPhishingFilters') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListAntiPhishingFilters', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'editAntiPhishingFilter') {
+						const filterJson = this.getNodeParameter('esAntiPhishingFilterJson', i) as string;
+						let filterData: IDataObject;
+						try {
+							filterData = JSON.parse(filterJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Filter JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditAntiPhishingFilter', {
+							...filterData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listMalwareFilters') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListMalwareFilters', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'editMalwareFilter') {
+						const filterJson = this.getNodeParameter('esMalwareFilterJson', i) as string;
+						let filterData: IDataObject;
+						try {
+							filterData = JSON.parse(filterJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Filter JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditMalwareFilter', {
+							...filterData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listSafeAttachmentsFilters') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSafeAttachmentsFilters', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addTenantAllowBlockList') {
+						const blockListJson = this.getNodeParameter('esBlockListJson', i) as string;
+						let blockListData: IDataObject;
+						try {
+							blockListData = JSON.parse(blockListJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Block List JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddTenantAllowBlockList', {
+							...blockListData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'removeTenantAllowBlockList') {
+						const blockListJson = this.getNodeParameter('esBlockListJson', i) as string;
+						let blockListData: IDataObject;
+						try {
+							blockListData = JSON.parse(blockListJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Block List JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveTenantAllowBlockList', {
+							...blockListData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listTenantAllowBlockList') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListTenantAllowBlockList', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					}
+				}
+
+				// ==================== EXCHANGE RESOURCE ====================
+				else if (resource === 'exchangeResource') {
+					const tenantFilter = getTenantFilter();
+
+					if (operation === 'listRooms') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListRooms', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addRoomMailbox') {
+						const displayName = this.getNodeParameter('erDisplayName', i) as string;
+						const username = this.getNodeParameter('erUsername', i) as string;
+						const domain = this.getNodeParameter('erDomain', i) as string;
+						const additionalJson = this.getNodeParameter('erAdditionalJson', i) as string;
+						let additionalData: IDataObject = {};
+						if (additionalJson && additionalJson !== '{}') {
+							try {
+								additionalData = JSON.parse(additionalJson) as IDataObject;
+							} catch (e) {
+								throw new NodeOperationError(this.getNode(), 'Additional JSON must be valid JSON', { itemIndex: i });
+							}
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddRoomMailbox', {
+							...additionalData,
+							tenantFilter,
+							displayName,
+							username,
+							domain,
+						}, {});
+					} else if (operation === 'editRoomMailbox') {
+						const roomJson = this.getNodeParameter('erRoomJson', i) as string;
+						let roomData: IDataObject;
+						try {
+							roomData = JSON.parse(roomJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Room JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditRoomMailbox', {
+							...roomData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listEquipment') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListEquipment', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addEquipmentMailbox') {
+						const displayName = this.getNodeParameter('erDisplayName', i) as string;
+						const username = this.getNodeParameter('erUsername', i) as string;
+						const domain = this.getNodeParameter('erDomain', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddEquipmentMailbox', {
+							tenantFilter,
+							displayName,
+							username,
+							domain,
+						}, {});
+					} else if (operation === 'editEquipmentMailbox') {
+						const equipmentJson = this.getNodeParameter('erEquipmentJson', i) as string;
+						let equipmentData: IDataObject;
+						try {
+							equipmentData = JSON.parse(equipmentJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Equipment JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditEquipmentMailbox', {
+							...equipmentData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listRoomLists') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListRoomLists', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addRoomList') {
+						const displayName = this.getNodeParameter('erDisplayName', i) as string;
+						const username = this.getNodeParameter('erUsername', i) as string;
+						const domain = this.getNodeParameter('erDomain', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddRoomList', {
+							tenantFilter,
+							displayName,
+							username,
+							domain,
+						}, {});
+					} else if (operation === 'editRoomList') {
+						const roomListJson = this.getNodeParameter('erRoomListJson', i) as string;
+						let roomListData: IDataObject;
+						try {
+							roomListData = JSON.parse(roomListJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Room List JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditRoomList', {
+							...roomListData,
+							tenantFilter,
+						}, {});
+					}
+				}
+
 				// ==================== GDAP ====================
 				else if (resource === 'gdap') {
 					const tenantFilter = getTenantFilter();
@@ -2375,6 +3471,307 @@ export class Cipp implements INodeType {
 							},
 							{},
 						);
+					}
+				}
+
+				// ==================== STANDARDS ====================
+				else if (resource === 'standards') {
+					const tenantFilter = (['listStandardTemplates', 'addStandardTemplate', 'removeStandardTemplate', 'listDomainHealth'].includes(operation))
+						? undefined
+						: getTenantFilter();
+
+					if (operation === 'listStandards') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListStandards', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addStandardsDeploy') {
+						const standardsJson = this.getNodeParameter('standardsJson', i) as string;
+						let standardsData: IDataObject;
+						try {
+							standardsData = JSON.parse(standardsJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Standards JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddStandardsDeploy', {
+							...standardsData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'removeStandard') {
+						const standardId = this.getNodeParameter('standardId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveStandard', {
+							tenantFilter,
+							ID: standardId,
+						}, {});
+					} else if (operation === 'listStandardTemplates') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/listStandardTemplates', {}, {});
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addStandardTemplate') {
+						const templateJson = this.getNodeParameter('standardTemplateJson', i) as string;
+						let templateData: IDataObject;
+						try {
+							templateData = JSON.parse(templateJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Template JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddStandardsTemplate', {
+							...templateData,
+						}, {});
+					} else if (operation === 'removeStandardTemplate') {
+						const templateId = this.getNodeParameter('standardTemplateId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveStandardTemplate', {
+							ID: templateId,
+						}, {});
+					} else if (operation === 'runStandards') {
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecStandardsRun', {
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listBPA') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListBPA', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'execBPA') {
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecBPA', {
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listDomainAnalyser') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListDomainAnalyser', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'execDomainAnalyser') {
+						const domain = this.getNodeParameter('domain', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecDomainAnalyser', {
+							tenantFilter,
+							Domain: domain,
+						}, {});
+					} else if (operation === 'listDomainHealth') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const domain = this.getNodeParameter('domain', i) as string;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListDomainHealth', {}, { Domain: domain });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listTenantDrift') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListTenantDrift', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listTenantAlignment') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListTenantAlignment', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'execDriftClone') {
+						const driftJson = this.getNodeParameter('driftJson', i) as string;
+						let driftData: IDataObject;
+						try {
+							driftData = JSON.parse(driftJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Drift JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecDriftClone', {
+							...driftData,
+							tenantFilter,
+						}, {});
+					}
+				}
+
+				// ==================== INTUNE ====================
+				else if (resource === 'intune') {
+					const tenantFilter = getTenantFilter();
+
+					if (operation === 'listIntuneScripts') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListIntuneScript', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'editIntuneScript') {
+						const scriptJson = this.getNodeParameter('intuneScriptJson', i) as string;
+						let scriptData: IDataObject;
+						try {
+							scriptData = JSON.parse(scriptJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Script JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/EditIntuneScript', {
+							...scriptData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'removeIntuneScript') {
+						const id = this.getNodeParameter('intuneId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveIntuneScript', {
+							tenantFilter,
+							ID: id,
+						}, {});
+					} else if (operation === 'listCompliancePolicies') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListCompliancePolicies', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listAppProtectionPolicies') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListAppProtectionPolicies', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listAssignmentFilters') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListAssignmentFilters', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addAssignmentFilter') {
+						const filterJson = this.getNodeParameter('intuneFilterJson', i) as string;
+						let filterData: IDataObject;
+						try {
+							filterData = JSON.parse(filterJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Filter JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddAssignmentFilter', {
+							...filterData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listIntuneReusableSettings') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListIntuneReusableSettings', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addIntuneReusableSetting') {
+						const settingJson = this.getNodeParameter('intuneSettingJson', i) as string;
+						let settingData: IDataObject;
+						try {
+							settingData = JSON.parse(settingJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Setting JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddIntuneReusableSetting', {
+							...settingData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'removeIntuneReusableSetting') {
+						const id = this.getNodeParameter('intuneId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveIntuneReusableSetting', {
+							tenantFilter,
+							ID: id,
+						}, {});
+					} else if (operation === 'listIntuneTemplates') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListIntuneTemplates', {}, {});
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addWin32ScriptApp') {
+						const appJson = this.getNodeParameter('intuneAppJson', i) as string;
+						let appData: IDataObject;
+						try {
+							appData = JSON.parse(appJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'App JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddWin32ScriptApp', {
+							...appData,
+							tenantFilter,
+						}, {});
+					}
+				}
+
+				// ==================== SHAREPOINT ====================
+				else if (resource === 'sharepoint') {
+					const tenantFilter = getTenantFilter();
+
+					if (operation === 'deleteSharepointSite') {
+						const siteUrl = this.getNodeParameter('siteUrl', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/DeleteSharepointSite', {
+							tenantFilter,
+							SiteUrl: siteUrl,
+						}, {});
+					} else if (operation === 'listSharepointQuota') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharepointQuota', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listSharepointSettings') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharepointSettings', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listSharepointAdminUrl') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharepointAdminUrl', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					}
+				}
+
+				// ==================== TESTING ====================
+				else if (resource === 'testing') {
+					const tenantFilter = getTenantFilter();
+
+					if (operation === 'listTests') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListTests', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listAvailableTests') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListAvailableTests', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'execTestRun') {
+						const testJson = this.getNodeParameter('testJson', i) as string;
+						let testData: IDataObject;
+						try {
+							testData = JSON.parse(testJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Test JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecTestRun', {
+							...testData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'listTestReports') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListTestReports', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'addTestReport') {
+						const reportJson = this.getNodeParameter('reportJson', i) as string;
+						let reportData: IDataObject;
+						try {
+							reportData = JSON.parse(reportJson) as IDataObject;
+						} catch (e) {
+							throw new NodeOperationError(this.getNode(), 'Report JSON must be valid JSON', { itemIndex: i });
+						}
+						responseData = await cippApiRequest.call(this, 'POST', '/api/AddTestReport', {
+							...reportData,
+							tenantFilter,
+						}, {});
+					} else if (operation === 'deleteTestReport') {
+						const id = this.getNodeParameter('testReportId', i) as string;
+						responseData = await cippApiRequest.call(this, 'POST', '/api/DeleteTestReport', {
+							tenantFilter,
+							ID: id,
+						}, {});
 					}
 				}
 
