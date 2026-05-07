@@ -404,16 +404,28 @@ export const toolsOperations: INodeProperties[] = [
 				action: 'Search breaches for tenant',
 			},
 			{
-				name: 'Execute Breach Search',
-				value: 'executeBreachSearch',
-				description: 'Execute a comprehensive breach search',
-				action: 'Execute breach search',
+				name: 'CIPP API Request',
+				value: 'cippApiRequest',
+				description: 'Call any CIPP API endpoint directly',
+				action: 'Execute CIPP API request',
 			},
 			{
 				name: 'Exec Graph Request',
 				value: 'execGraphRequest',
 				description: 'Execute a Microsoft Graph request via POST /api/ExecGraphRequest',
 				action: 'Exec graph request',
+			},
+			{
+				name: 'Execute Breach Search',
+				value: 'executeBreachSearch',
+				description: 'Execute a comprehensive breach search',
+				action: 'Execute breach search',
+			},
+			{
+				name: 'Get Version',
+				value: 'getVersion',
+				description: 'Get CIPP API version information',
+				action: 'Get CIPP version',
 			},
 			{
 				name: 'Graph Request (Exec)',
@@ -713,5 +725,154 @@ export const toolsFields: INodeProperties[] = [
 				description: 'Maximum serialized payload size in bytes sent to CIPP',
 			},
 		],
+	},
+
+	// CIPP API Request fields
+	{
+		displayName: 'Method',
+		name: 'cippApiMethod',
+		type: 'options',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['tools'],
+				operation: ['cippApiRequest'],
+			},
+		},
+		options: [
+			{ name: 'DELETE', value: 'DELETE' },
+			{ name: 'GET', value: 'GET' },
+			{ name: 'PATCH', value: 'PATCH' },
+			{ name: 'POST', value: 'POST' },
+			{ name: 'PUT', value: 'PUT' },
+		],
+		default: 'GET',
+		description: 'HTTP method for the CIPP API request',
+	},
+	{
+		displayName: 'Endpoint',
+		name: 'cippApiEndpoint',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['tools'],
+				operation: ['cippApiRequest'],
+			},
+		},
+		default: '/api/PublicPing',
+		placeholder: 'e.g. /api/ListDomains',
+		description: 'CIPP API endpoint path. /api/ is added automatically if omitted.',
+	},
+	{
+		displayName: 'Include Tenant Filter',
+		name: 'cippApiIncludeTenant',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['tools'],
+				operation: ['cippApiRequest'],
+			},
+		},
+		default: true,
+		description: 'Whether to add the selected tenantFilter to the query/body when it is missing',
+	},
+	{
+		displayName: 'Tenant',
+		name: 'cippApiTenantFilter',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		required: true,
+		description: 'The tenantFilter value to add to the request',
+		displayOptions: {
+			show: {
+				resource: ['tools'],
+				operation: ['cippApiRequest'],
+				cippApiIncludeTenant: [true],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'tenantSearch',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By Domain',
+				name: 'domain',
+				type: 'string',
+				placeholder: 'e.g. contoso.onmicrosoft.com',
+			},
+		],
+	},
+	{
+		displayName: 'Query Parameters',
+		name: 'cippApiQueryJson',
+		type: 'json',
+		displayOptions: {
+			show: {
+				resource: ['tools'],
+				operation: ['cippApiRequest'],
+			},
+		},
+		default: '{}',
+		description: 'Additional query parameters as a JSON object',
+	},
+	{
+		displayName: 'Body',
+		name: 'cippApiBodyJson',
+		type: 'json',
+		displayOptions: {
+			show: {
+				resource: ['tools'],
+				operation: ['cippApiRequest'],
+				cippApiMethod: ['POST', 'PUT', 'PATCH', 'DELETE'],
+			},
+		},
+		default: '{}',
+		description: 'Request body as a JSON object',
+	},
+	{
+		displayName: 'Options',
+		name: 'cippApiOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['tools'],
+				operation: ['cippApiRequest'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Max Payload Bytes',
+				name: 'maxPayloadBytes',
+				type: 'number',
+				typeOptions: {
+					minValue: 1024,
+					maxValue: 1048576,
+				},
+				default: 262144,
+				description: 'Maximum serialized request body size in bytes sent to CIPP',
+			},
+		],
+	},
+	{
+		displayName: 'Local Version',
+		name: 'localVersion',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['tools'],
+				operation: ['getVersion'],
+			},
+		},
+		default: '',
+		description: 'Optional local version to compare against CIPP latest version',
 	},
 ];

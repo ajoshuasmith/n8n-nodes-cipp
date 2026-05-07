@@ -3,6 +3,7 @@ import type {
 	ICredentialTestFunctions,
 	IDataObject,
 	IExecuteFunctions,
+	IHttpRequestMethods,
 	ILoadOptionsFunctions,
 	INodeCredentialTestResult,
 	INodeExecutionData,
@@ -262,7 +263,7 @@ export class Cipp implements INodeType {
 				const results = tenants
 					.filter((tenant) => {
 						if (!filter) return true;
-						const searchTerm = filter.toLowerCase();
+						const searchTerm = (filter || '').toLowerCase();
 						return (
 							tenant.displayName?.toLowerCase().includes(searchTerm) ||
 							tenant.defaultDomainName?.toLowerCase().includes(searchTerm)
@@ -347,6 +348,28 @@ export class Cipp implements INodeType {
 			Array.isArray(payload) ? payload.length > 0 : Object.keys(payload).length > 0;
 		const isTeamsScheduleEndpoint = (endpoint: string): boolean =>
 			/^teams\/[^/]+\/schedule(?:\/.*)?$/i.test(endpoint);
+		const normalizeCippEndpoint = (endpoint: string): string => {
+			const trimmed = endpoint.trim();
+			if (!trimmed) {
+				throw new NodeOperationError(this.getNode(), 'Endpoint is required.');
+			}
+
+			const withoutOrigin = trimmed.replace(/^https?:\/\/[^/]+/i, '');
+			const withLeadingSlash = withoutOrigin.startsWith('/') ? withoutOrigin : `/${withoutOrigin}`;
+			return withLeadingSlash.toLowerCase().startsWith('/api/')
+				? withLeadingSlash
+				: `/api${withLeadingSlash}`;
+		};
+		const splitCsv = (value: unknown): string[] | undefined => {
+			if (typeof value !== 'string' || value.trim() === '') {
+				return undefined;
+			}
+
+			return value
+				.split(',')
+				.map((entry) => entry.trim())
+				.filter(Boolean);
+		};
 
 		for (let i = 0; i < items.length; i++) {
 			try {
@@ -524,13 +547,37 @@ export class Cipp implements INodeType {
 						const domain = this.getNodeParameter('domain', i) as string;
 						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
 
+						// Map to the field names CIPP's /api/AddUser (New-CIPPUser) expects:
+						// - givenName (not firstName)
+						// - surname (not lastName)
+						// - username (used for mailNickname + UPN prefix)
+						// - primDomain (object with .value, or Domain as plain string)
 						const body: IDataObject = {
 							tenantFilter,
-							firstName,
-							lastName,
-							domain,
-							...additionalFields,
+							givenName: additionalFields.givenName || firstName || '',
+							surname: additionalFields.surname || lastName || '',
+							displayName: additionalFields.displayName || `${firstName || ''} ${lastName || ''}`.trim(),
+							username: additionalFields.username || additionalFields.mailNickname || (firstName || '').toLowerCase(),
+							mailNickname: additionalFields.mailNickname || additionalFields.username || (firstName || '').toLowerCase(),
+							Domain: domain,
+							usageLocation: additionalFields.usageLocation || 'US',
 						};
+
+						// Spread remaining additionalFields (but don't overwrite mapped fields)
+						for (const [key, value] of Object.entries(additionalFields)) {
+							if (!body[key] && value !== undefined && value !== '') {
+								body[key] = value;
+							}
+						}
+
+						// Wrap copyFrom and setManager as {value: id} objects if they're plain strings
+						// CIPP's AddUser expects these as objects with a .value property
+						if (body.copyFrom && typeof body.copyFrom === 'string') {
+							body.copyFrom = { value: body.copyFrom };
+						}
+						if (body.setManager && typeof body.setManager === 'string') {
+							body.setManager = { value: body.setManager };
+						}
 
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddUser', body, {});
 					} else if (operation === 'disable' || operation === 'enable') {
@@ -658,16 +705,28 @@ export class Cipp implements INodeType {
 					} else if (operation === 'offboard') {
 						const users = this.getNodeParameter('usersToOffboard', i) as string;
 						const scheduled = this.getNodeParameter('scheduledOffboard', i) as boolean;
+						const offboardOptions = this.getNodeParameter('offboardOptions', i, {}) as IDataObject;
+
+						const offboardBody: IDataObject = {
+							tenantFilter,
+							user: JSON.parse(users),
+						};
+						// Only include Scheduled when enabled — omitting it triggers immediate execution
+						if (scheduled) {
+							offboardBody.Scheduled = { enabled: true };
+						}
+						// Spread offboard options at the top level (CIPP expects them here, not on the user object)
+						for (const [key, value] of Object.entries(offboardOptions)) {
+							if (value !== undefined && value !== '' && value !== false) {
+								offboardBody[key] = value;
+							}
+						}
 
 						responseData = await cippApiRequest.call(
 							this,
 							'POST',
 							'/api/ExecOffboardUser',
-							{
-								tenantFilter,
-								user: JSON.parse(users),
-								Scheduled: { enabled: scheduled },
-							},
+							offboardBody,
 							{},
 						);
 					} else if (operation === 'listInactiveAccounts') {
@@ -1034,6 +1093,12 @@ export class Cipp implements INodeType {
 						if (Array.isArray(responseData) && !returnAll) {
 							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
 						}
+					} else if (operation === 'listPolicyChanges') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListConditionalAccessPolicyChanges', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
 					} else if (operation === 'listTemplates') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						responseData = await cippApiRequest.call(this, 'GET', '/api/ListCAtemplates', {}, {});
@@ -1334,6 +1399,44 @@ export class Cipp implements INodeType {
 					} else if (operation === 'listSharedMailboxAccountEnabled') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharedMailboxAccountEnabled', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listMessageTrace') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const filters = this.getNodeParameter('messageTraceFilters', i, {}) as IDataObject;
+						const body: IDataObject = { tenantFilter };
+
+						for (const key of [
+							'dateFilter',
+							'days',
+							'endDate',
+							'fromIP',
+							'MessageId',
+							'startDate',
+							'toIP',
+							'traceDetail',
+						]) {
+							if (filters[key] !== undefined && filters[key] !== '') {
+								body[key] = filters[key];
+							}
+						}
+
+						const recipients = splitCsv(filters.recipient);
+						const senders = splitCsv(filters.sender);
+						const statuses = splitCsv(filters.status);
+						if (recipients) body.recipient = recipients;
+						if (senders) body.sender = senders;
+						if (statuses) body.status = statuses;
+
+						responseData = await cippApiRequest.call(
+							this,
+							'POST',
+							'/api/ListMessageTrace',
+							body,
+							{},
+						);
+
 						if (Array.isArray(responseData) && !returnAll) {
 							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
 						}
@@ -1946,6 +2049,52 @@ export class Cipp implements INodeType {
 							const limit = this.getNodeParameter('limit', i) as number;
 							responseData = responseData.slice(0, limit);
 						}
+					} else if (operation === 'listDetectedApps') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const deviceId = this.getNodeParameter('detectedAppDeviceId', i, '') as string;
+						const includeDevices = this.getNodeParameter('detectedAppsIncludeDevices', i) as boolean;
+						const qs: IDataObject = { tenantFilter };
+
+						if (deviceId) qs.DeviceID = deviceId;
+						if (includeDevices) qs.includeDevices = 'true';
+
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListDetectedApps', {}, qs);
+
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listDetectedAppDevices') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const detectedAppId = this.getNodeParameter('detectedAppId', i) as string;
+
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListDetectedAppDevices',
+							{},
+							{ tenantFilter, id: detectedAppId },
+						);
+
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listAppRepository') {
+						const search = this.getNodeParameter('appRepositorySearch', i, '') as string;
+						const repository = this.getNodeParameter('appRepositoryName', i, '') as string;
+						const body: IDataObject = { tenantFilter };
+
+						if (search) body.Search = search;
+						if (repository) body.Repository = repository;
+
+						responseData = await cippApiRequest.call(
+							this,
+							'POST',
+							'/api/ListAppsRepository',
+							body,
+							{},
+						);
 					} else if (operation === 'assign') {
 						const appId = this.getNodeParameter('appId', i) as string;
 						const assignTo = this.getNodeParameter('assignTo', i) as string;
@@ -2525,6 +2674,72 @@ export class Cipp implements INodeType {
 							{},
 							{ tenantFilter },
 						);
+					} else if (operation === 'getVersion') {
+						const localVersion = this.getNodeParameter('localVersion', i, '') as string;
+						const qs: IDataObject = {};
+
+						if (localVersion) qs.LocalVersion = localVersion;
+
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/GetVersion',
+							{},
+							qs,
+						);
+					} else if (operation === 'cippApiRequest') {
+						const method = this.getNodeParameter('cippApiMethod', i) as IHttpRequestMethods;
+						const endpoint = normalizeCippEndpoint(
+							this.getNodeParameter('cippApiEndpoint', i) as string,
+						);
+						const includeTenant = this.getNodeParameter('cippApiIncludeTenant', i) as boolean;
+						const query = parseJsonObjectPayload(
+							this.getNodeParameter('cippApiQueryJson', i, '{}'),
+							'Query Parameters',
+							i,
+						);
+						const body =
+							method === 'GET'
+								? {}
+								: parseJsonObjectPayload(
+										this.getNodeParameter('cippApiBodyJson', i, '{}'),
+										'Body',
+										i,
+						);
+
+						if (includeTenant) {
+							const tenantFilterValue = this.getNodeParameter('cippApiTenantFilter', i) as IDataObject;
+							const tenantFilter = getResourceLocatorValue(tenantFilterValue);
+
+							if (!query.tenantFilter) {
+								query.tenantFilter = tenantFilter;
+							}
+
+							if (!body.tenantFilter) {
+								body.tenantFilter = tenantFilter;
+							}
+						}
+
+						const options = this.getNodeParameter('cippApiOptions', i, {}) as IDataObject;
+						const maxPayloadBytes = Number(options.maxPayloadBytes ?? 262144);
+						if (!Number.isFinite(maxPayloadBytes) || maxPayloadBytes <= 0) {
+							throw new NodeOperationError(
+								this.getNode(),
+								'Max Payload Bytes must be a positive number.',
+								{ itemIndex: i },
+							);
+						}
+
+						const payloadBytes = new TextEncoder().encode(JSON.stringify(body)).length;
+						if (payloadBytes > maxPayloadBytes) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Payload is ${payloadBytes} bytes, which exceeds Max Payload Bytes (${maxPayloadBytes}).`,
+								{ itemIndex: i },
+							);
+						}
+
+						responseData = await cippApiRequest.call(this, method, endpoint, body, query);
 					} else if (operation === 'graphRequest') {
 						const tenantFilter = getTenantFilter();
 						const endpoint = this.getNodeParameter('graphEndpoint', i) as string;
@@ -2992,12 +3207,76 @@ export class Cipp implements INodeType {
 							const limit = this.getNodeParameter('limit', i) as number;
 							responseData = responseData.slice(0, limit);
 						}
+					} else if (operation === 'listAppConsentRequests') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const requestStatus = this.getNodeParameter('appConsentRequestStatus', i, '') as string;
+						const filter = this.getNodeParameter('appConsentFilter', i, '') as string;
+						const qs: IDataObject = { tenantFilter };
+
+						if (requestStatus) qs.RequestStatus = requestStatus;
+						if (filter) qs.Filter = filter;
+
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListAppConsentRequests',
+							{},
+							qs,
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listAzureAdConnectStatus') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const dataToReturn = this.getNodeParameter('aadConnectDataToReturn', i, '') as string;
+						const qs: IDataObject = { tenantFilter };
+
+						if (dataToReturn) qs.DataToReturn = dataToReturn;
+
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListAzureADConnectStatus',
+							{},
+							qs,
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listBasicAuth') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListBasicAuth',
+							{},
+							{ tenantFilter },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
 					} else if (operation === 'listDeletedItems') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						responseData = await cippApiRequest.call(
 							this,
 							'GET',
 							'/api/ListDeletedItems',
+							{},
+							{ tenantFilter },
+						);
+						if (Array.isArray(responseData) && !returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					} else if (operation === 'listDomains') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(
+							this,
+							'GET',
+							'/api/ListDomains',
 							{},
 							{ tenantFilter },
 						);
@@ -3027,6 +3306,25 @@ export class Cipp implements INodeType {
 							{
 								tenantFilter,
 								ID: objectId,
+							},
+							{},
+						);
+					} else if (operation === 'setCloudManaged') {
+						const objectId = this.getNodeParameter('cloudManagedObjectId', i) as string;
+						const displayName = this.getNodeParameter('cloudManagedDisplayName', i, '') as string;
+						const type = this.getNodeParameter('cloudManagedType', i) as string;
+						const isCloudManaged = this.getNodeParameter('isCloudManaged', i) as boolean;
+
+						responseData = await cippApiRequest.call(
+							this,
+							'POST',
+							'/api/ExecSetCloudManaged',
+							{
+								tenantFilter,
+								displayName,
+								ID: objectId,
+								isCloudManaged: String(isCloudManaged),
+								type,
 							},
 							{},
 						);
@@ -3143,6 +3441,12 @@ export class Cipp implements INodeType {
 					if (operation === 'listSpamFilters') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSpamfilter', {}, { tenantFilter });
+						if (Array.isArray(responseData) && !returnAll) {
+							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
+						}
+					} else if (operation === 'listSpamFilterTemplates') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSpamFilterTemplates', {}, { tenantFilter });
 						if (Array.isArray(responseData) && !returnAll) {
 							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
 						}

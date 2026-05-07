@@ -61,6 +61,24 @@ export const applicationOperations: INodeProperties[] = [
 				action: 'Get application queue',
 			},
 			{
+				name: 'List App Repository',
+				value: 'listAppRepository',
+				description: 'Search CIPP application repositories',
+				action: 'List app repository',
+			},
+			{
+				name: 'List Detected App Devices',
+				value: 'listDetectedAppDevices',
+				description: 'List devices for a detected application',
+				action: 'List detected app devices',
+			},
+			{
+				name: 'List Detected Apps',
+				value: 'listDetectedApps',
+				description: 'List detected Intune applications',
+				action: 'List detected apps',
+			},
+			{
 				name: 'Remove',
 				value: 'remove',
 				description: 'Remove an application',
@@ -118,7 +136,7 @@ export const applicationFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['application'],
-				operation: ['getAll', 'getQueue'],
+				operation: ['getAll', 'getQueue', 'listDetectedAppDevices', 'listDetectedApps'],
 			},
 		},
 		default: false,
@@ -131,7 +149,7 @@ export const applicationFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['application'],
-				operation: ['getAll', 'getQueue'],
+				operation: ['getAll', 'getQueue', 'listDetectedAppDevices', 'listDetectedApps'],
 				returnAll: [false],
 			},
 		},
@@ -211,6 +229,72 @@ export const applicationFields: INodeProperties[] = [
 		default: '',
 		placeholder: 'Group1,Group2',
 		description: 'Comma-separated list of group names to assign to',
+	},
+	{
+		displayName: 'Device ID',
+		name: 'detectedAppDeviceId',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['application'],
+				operation: ['listDetectedApps'],
+			},
+		},
+		default: '',
+		description: 'Optional managed device ID to filter detected apps',
+	},
+	{
+		displayName: 'Include Devices',
+		name: 'detectedAppsIncludeDevices',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['application'],
+				operation: ['listDetectedApps'],
+			},
+		},
+		default: false,
+		description: 'Whether CIPP should include device details where supported',
+	},
+	{
+		displayName: 'Detected App ID',
+		name: 'detectedAppId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['application'],
+				operation: ['listDetectedAppDevices'],
+			},
+		},
+		default: '',
+		description: 'The detected app ID to list devices for',
+	},
+	{
+		displayName: 'Repository Search',
+		name: 'appRepositorySearch',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['application'],
+				operation: ['listAppRepository'],
+			},
+		},
+		default: '',
+		description: 'Optional search term for application repository results',
+	},
+	{
+		displayName: 'Repository',
+		name: 'appRepositoryName',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['application'],
+				operation: ['listAppRepository'],
+			},
+		},
+		default: '',
+		description: 'Optional repository name or identifier',
 	},
 
 	// WinGet/Store App fields

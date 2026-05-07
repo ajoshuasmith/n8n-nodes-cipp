@@ -2,6 +2,7 @@ import type { INodeProperties } from 'n8n-workflow';
 
 const listOperations = [
 	'listPolicies',
+	'listPolicyChanges',
 	'listTemplates',
 	'listNamedLocations',
 ];
@@ -64,6 +65,12 @@ export const conditionalAccessOperations: INodeProperties[] = [
 				value: 'listPolicies',
 				description: 'List all conditional access policies',
 				action: 'List policies',
+			},
+			{
+				name: 'List Policy Changes',
+				value: 'listPolicyChanges',
+				description: 'List conditional access policy changes',
+				action: 'List policy changes',
 			},
 			{
 				name: 'List Templates',

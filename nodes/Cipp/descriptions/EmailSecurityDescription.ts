@@ -8,6 +8,7 @@ const listOperations = [
 	'listAntiPhishingFilters',
 	'listMalwareFilters',
 	'listSafeAttachmentsFilters',
+	'listSpamFilterTemplates',
 	'listTenantAllowBlockList',
 ];
 
@@ -112,6 +113,12 @@ export const emailSecurityOperations: INodeProperties[] = [
 				value: 'listSafeAttachmentsFilters',
 				description: 'List all Safe Attachments filter policies',
 				action: 'List Safe Attachments filters',
+			},
+			{
+				name: 'List Spam Filter Templates',
+				value: 'listSpamFilterTemplates',
+				description: 'List CIPP spam filter templates',
+				action: 'List spam filter templates',
 			},
 			{
 				name: 'List Spam Filters',
