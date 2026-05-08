@@ -97,7 +97,7 @@ export async function cippApiRequest(
 	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
 	method: IHttpRequestMethods,
 	endpoint: string,
-	body: IDataObject = {},
+	body: IDataObject | IDataObject[] = {},
 	query: IDataObject = {},
 ): Promise<IDataObject> {
 	const credentials = (await this.getCredentials('cippApi')) as unknown as ICippCredentials;

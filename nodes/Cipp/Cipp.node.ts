@@ -706,16 +706,36 @@ export class Cipp implements INodeType {
 						const users = this.getNodeParameter('usersToOffboard', i) as string;
 						const scheduled = this.getNodeParameter('scheduledOffboard', i) as boolean;
 						const offboardOptions = this.getNodeParameter('offboardOptions', i, {}) as IDataObject;
+						const parsedUsers = parseJsonPayload(users, 'Users to Offboard', i);
+						const userValues = (Array.isArray(parsedUsers) ? parsedUsers : [parsedUsers])
+							.map((user) => {
+								if (typeof user === 'string') return user;
+								return (
+									(user.value as string | undefined) ??
+									(user.userPrincipalName as string | undefined) ??
+									(user.UserPrincipalName as string | undefined) ??
+									(user.mail as string | undefined) ??
+									(user.id as string | undefined)
+								);
+							})
+							.filter((user): user is string => Boolean(user));
+
+						if (userValues.length === 0) {
+							throw new NodeOperationError(
+								this.getNode(),
+								'Users to Offboard must contain at least one user identifier.',
+								{ itemIndex: i },
+							);
+						}
 
 						const offboardBody: IDataObject = {
 							tenantFilter,
-							user: JSON.parse(users),
+							user: { value: userValues },
 						};
-						// Only include Scheduled when enabled — omitting it triggers immediate execution
 						if (scheduled) {
-							offboardBody.Scheduled = { enabled: true };
+							const scheduledDate = this.getNodeParameter('scheduledOffboardDate', i) as string;
+							offboardBody.Scheduled = { enabled: true, date: scheduledDate };
 						}
-						// Spread offboard options at the top level (CIPP expects them here, not on the user object)
 						for (const [key, value] of Object.entries(offboardOptions)) {
 							if (value !== undefined && value !== '' && value !== false) {
 								offboardBody[key] = value;
@@ -947,20 +967,23 @@ export class Cipp implements INodeType {
 						);
 					} else if (operation === 'bulkLicense') {
 						const licenseJson = this.getNodeParameter('licenseJson', i) as string;
-						let parsedLicense: IDataObject;
-						try {
-							parsedLicense = JSON.parse(typeof licenseJson === 'string' ? licenseJson : '{}') as IDataObject;
-						} catch (e) {
-							throw new NodeOperationError(this.getNode(), 'License JSON must be valid JSON', { itemIndex: i });
-						}
+						const parsedLicense = parseJsonPayload(licenseJson, 'License JSON', i);
+						const licenseRequests = (
+							Array.isArray(parsedLicense)
+								? parsedLicense
+								: Array.isArray(parsedLicense.requests)
+									? (parsedLicense.requests as IDataObject[])
+									: [parsedLicense]
+						).map((request) => ({
+							tenantFilter,
+							...request,
+						}));
+
 						responseData = await cippApiRequest.call(
 							this,
 							'POST',
 							'/api/ExecBulkLicense',
-							{
-								...parsedLicense,
-								tenantFilter,
-							},
+							licenseRequests,
 							{},
 						);
 					}
@@ -1525,7 +1548,7 @@ export class Cipp implements INodeType {
 						const autoReplyState = this.getNodeParameter('autoReplyState', i) as string;
 						const body: IDataObject = {
 							tenantFilter,
-							user: userId,
+							userId,
 							AutoReplyState: autoReplyState,
 						};
 						if (autoReplyState === 'Enabled') {
@@ -1534,14 +1557,23 @@ export class Cipp implements INodeType {
 						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecSetOOO', body, {});
 					} else if (operation === 'setForwarding') {
 						const userId = this.getNodeParameter('userId', i) as string;
+						const forwardingType = this.getNodeParameter('forwardingType', i) as string;
 						const forwardTo = this.getNodeParameter('forwardTo', i) as string;
 						const keepCopy = this.getNodeParameter('keepCopy', i) as boolean;
-						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecEmailForward', {
+						const body: IDataObject = {
 							tenantFilter,
-							user: userId,
-							ForwardTo: forwardTo,
-							KeepCopy: keepCopy,
-						}, {});
+							userID: userId,
+							forwardOption: forwardTo ? forwardingType : 'disabled',
+							KeepCopy: String(keepCopy),
+						};
+
+						if (forwardTo && forwardingType === 'internalAddress') {
+							body.ForwardInternal = forwardTo;
+						} else if (forwardTo) {
+							body.ForwardExternal = forwardTo;
+						}
+
+						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecEmailForward', body, {});
 
 					// ---------- Edit Mailbox Permissions ----------
 					} else if (operation === 'editMailboxPermissions') {

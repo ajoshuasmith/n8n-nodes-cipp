@@ -555,6 +555,23 @@ export const mailboxFields: INodeProperties[] = [
 
 	// ==================== Email Forwarding ====================
 	{
+		displayName: 'Forwarding Type',
+		name: 'forwardingType',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['mailbox'],
+				operation: ['setForwarding'],
+			},
+		},
+		options: [
+			{ name: 'External Address', value: 'ExternalAddress' },
+			{ name: 'Internal Address', value: 'internalAddress' },
+		],
+		default: 'ExternalAddress',
+		description: 'Whether the forwarding target is internal or external',
+	},
+	{
 		displayName: 'Forward To',
 		name: 'forwardTo',
 		type: 'string',
@@ -566,7 +583,7 @@ export const mailboxFields: INodeProperties[] = [
 		},
 		default: '',
 		placeholder: 'forward@domain.com',
-		description: 'The email address to forward to (leave empty to disable)',
+		description: 'The forwarding target. Leave empty to disable forwarding.',
 	},
 	{
 		displayName: 'Keep Copy',

@@ -566,6 +566,21 @@ export const userFields: INodeProperties[] = [
 		description: 'Whether to schedule the offboarding for later',
 	},
 	{
+		displayName: 'Scheduled Time',
+		name: 'scheduledOffboardDate',
+		type: 'dateTime',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['offboard'],
+				scheduledOffboard: [true],
+			},
+		},
+		default: '',
+		description: 'When to run the scheduled offboarding task',
+	},
+	{
 		displayName: 'Offboard Options',
 		name: 'offboardOptions',
 		type: 'collection',
@@ -914,7 +929,7 @@ export const userFields: INodeProperties[] = [
 				operation: ['bulkLicense'],
 			},
 		},
-		default: '{}',
-		description: 'JSON object containing license assignment details',
+		default: '[]',
+		description: 'JSON array of license assignment request objects',
 	},
 ];
