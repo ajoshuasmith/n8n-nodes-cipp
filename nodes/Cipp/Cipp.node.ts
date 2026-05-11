@@ -644,7 +644,7 @@ export class Cipp implements INodeType {
 							'/api/ExecSendPush',
 							{
 								tenantFilter,
-								UserPrincipalName: userId,
+								UserEmail: userId,
 							},
 							{},
 						);
