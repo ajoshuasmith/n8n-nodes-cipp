@@ -484,11 +484,28 @@ export const userFields: INodeProperties[] = [
 				description: 'Mobile phone number',
 			},
 			{
+				displayName: 'Must Change Password',
+				name: 'mustChangePassword',
+				type: 'boolean',
+				default: true,
+				description:
+					'Whether the user must change their password at next sign-in. Maps to CIPP MustChangePass.',
+			},
+			{
 				displayName: 'Office Location',
 				name: 'officeLocation',
 				type: 'string',
 				default: '',
 				description: 'Office location / building name',
+			},
+			{
+				displayName: 'Password',
+				name: 'password',
+				type: 'string',
+				typeOptions: { password: true },
+				default: '',
+				description:
+					'Custom initial password. If omitted, CIPP generates a random one. Maps to CIPP password (New-CIPPUser).',
 			},
 			{
 				displayName: 'Postal Code',

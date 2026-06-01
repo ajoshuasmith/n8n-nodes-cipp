@@ -253,6 +253,26 @@ export const groupFields: INodeProperties[] = [
 			},
 		],
 	},
+	{
+		displayName: 'Group Type',
+		name: 'groupTypeForEdit',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['group'],
+				operation: ['edit'],
+			},
+		},
+		options: [
+			{ name: 'Microsoft 365', value: 'Microsoft 365' },
+			{ name: 'Security', value: 'Security' },
+			{ name: 'Distribution List', value: 'Distribution List' },
+			{ name: 'Mail-Enabled Security', value: 'Mail-Enabled Security' },
+		],
+		default: 'Microsoft 365',
+		description:
+			'Type of the group being edited. Required for CIPP to route member changes correctly: Microsoft 365 / Security use Graph, while Distribution List / Mail-Enabled Security use Exchange Online. Sending the wrong type (or none) silently no-ops.',
+	},
 
 	// Delete Group fields
 	{

@@ -579,6 +579,14 @@ export class Cipp implements INodeType {
 							body.setManager = { value: body.setManager };
 						}
 
+						// CIPP's New-CIPPUser reads `password` (used verbatim if present, else random)
+						// and `MustChangePass`. `password` is already spread above; map the
+						// mustChangePassword toggle to the field name CIPP expects.
+						if (additionalFields.mustChangePassword !== undefined) {
+							body.MustChangePass = additionalFields.mustChangePassword;
+							delete body.mustChangePassword;
+						}
+
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddUser', body, {});
 					} else if (operation === 'disable' || operation === 'enable') {
 						const userId = this.getNodeParameter('userId', i) as string;
@@ -1025,28 +1033,44 @@ export class Cipp implements INodeType {
 						);
 					} else if (operation === 'edit') {
 						const groupId = this.getNodeParameter('groupId', i) as string;
+						const groupType = this.getNodeParameter('groupTypeForEdit', i, '') as string;
 						const editOptions = this.getNodeParameter('editOptions', i, {}) as IDataObject;
 
+						const splitList = (v: string) =>
+							v
+								.split(',')
+								.map((x) => x.trim())
+								.filter((x) => x !== '');
+
+						// CIPP's EditGroup reads PascalCase, singular field names and uses groupType
+						// to route between Graph (Microsoft 365 / Security) and Exchange Online
+						// (Distribution List / Mail-Enabled Security). Without the right type or
+						// field names the request returns 200 with an empty Results array (silent no-op).
 						const body: IDataObject = {
 							tenantFilter,
 							groupId,
+							groupType,
 						};
 
+						// AddMember resolves bare UPN strings to object IDs server-side, so a plain
+						// string array works for both Graph and Exchange paths.
 						if (editOptions.addMembers) {
-							body.addMembers = (editOptions.addMembers as string).split(',').map((m) => m.trim());
+							body.AddMember = splitList(editOptions.addMembers as string);
+						}
+						// RemoveMember / AddOwner / RemoveOwner are keyed off `.value` server-side,
+						// so they must be objects.
+						if (editOptions.removeMembers) {
+							body.RemoveMember = splitList(editOptions.removeMembers as string).map((v) => ({
+								value: v,
+							}));
 						}
 						if (editOptions.addOwners) {
-							body.addOwners = (editOptions.addOwners as string).split(',').map((o) => o.trim());
-						}
-						if (editOptions.removeMembers) {
-							body.removeMembers = (editOptions.removeMembers as string)
-								.split(',')
-								.map((m) => m.trim());
+							body.AddOwner = splitList(editOptions.addOwners as string).map((v) => ({ value: v }));
 						}
 						if (editOptions.removeOwners) {
-							body.removeOwners = (editOptions.removeOwners as string)
-								.split(',')
-								.map((o) => o.trim());
+							body.RemoveOwner = splitList(editOptions.removeOwners as string).map((v) => ({
+								value: v,
+							}));
 						}
 
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditGroup', body, {});
@@ -1579,11 +1603,57 @@ export class Cipp implements INodeType {
 					} else if (operation === 'editMailboxPermissions') {
 						const userId = this.getNodeParameter('userId', i) as string;
 						const permissions = this.getNodeParameter('permissions', i, {}) as IDataObject;
-						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecEditMailboxPermissions', {
+
+						// CIPP's ExecEditMailboxPermissions reads each permission field as
+						// `($Request.body.<Field>).value`, so every recipient must be an object
+						// with a `.value` property (array of them for multiple). A bare string
+						// yields a null `.value` and the request silently no-ops (200 + empty Results).
+						const toValueObjects = (v: unknown) =>
+							String(v)
+								.split(',')
+								.map((x) => x.trim())
+								.filter((x) => x !== '')
+								.map((value) => ({ value }));
+
+						const body: IDataObject = {
 							tenantfilter: tenantFilter,
 							userID: userId,
-							...permissions,
-						}, {});
+						};
+
+						// AutoMapping is not a top-level field CIPP reads; AddFullAccess always
+						// automaps, AddFullAccessNoAutoMap does not. Route based on the toggle.
+						const autoMapping = permissions.AutoMapping !== false;
+						if (permissions.AddFullAccess) {
+							const fullAccess = toValueObjects(permissions.AddFullAccess);
+							if (autoMapping) {
+								body.AddFullAccess = fullAccess;
+							} else {
+								body.AddFullAccessNoAutoMap = fullAccess;
+							}
+						}
+						if (permissions.RemoveFullAccess) {
+							body.RemoveFullAccess = toValueObjects(permissions.RemoveFullAccess);
+						}
+						if (permissions.AddSendAs) {
+							body.AddSendAs = toValueObjects(permissions.AddSendAs);
+						}
+						if (permissions.RemoveSendAs) {
+							body.RemoveSendAs = toValueObjects(permissions.RemoveSendAs);
+						}
+						if (permissions.AddSendOnBehalf) {
+							body.AddSendOnBehalf = toValueObjects(permissions.AddSendOnBehalf);
+						}
+						if (permissions.RemoveSendOnBehalf) {
+							body.RemoveSendOnBehalf = toValueObjects(permissions.RemoveSendOnBehalf);
+						}
+
+						responseData = await cippApiRequest.call(
+							this,
+							'POST',
+							'/api/ExecEditMailboxPermissions',
+							body,
+							{},
+						);
 
 					// ---------- Edit Calendar Permissions ----------
 					} else if (operation === 'editCalendarPermissions') {
