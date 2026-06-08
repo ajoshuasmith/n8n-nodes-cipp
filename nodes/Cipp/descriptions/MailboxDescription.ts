@@ -103,7 +103,7 @@ export const mailboxOperations: INodeProperties[] = [
 				name: 'Enable Auto-Expanding Archive',
 				value: 'enableAutoExpandingArchive',
 				description: 'Enable auto-expanding archive for a user',
-				action: 'Enable auto-expanding archive',
+				action: 'Enable auto expanding archive',
 			},
 			{
 				name: 'Hide From GAL',
@@ -192,7 +192,6 @@ export const mailboxOperations: INodeProperties[] = [
 			{
 				name: 'List Shared Mailbox Statistics',
 				value: 'listSharedMailboxStatistics',
-				description: 'List shared mailbox statistics',
 				action: 'List shared mailbox statistics',
 			},
 			{
@@ -1137,7 +1136,6 @@ export const mailboxFields: INodeProperties[] = [
 			{ name: 'Delete', value: 'Delete' },
 		],
 		default: 'Quarantine',
-		description: 'The action to perform on the mobile device',
 	},
 
 	// ==================== High Volume Email ====================
@@ -1343,7 +1341,6 @@ export const mailboxFields: INodeProperties[] = [
 			{ name: 'Delete', value: 'Delete' },
 		],
 		default: 'List',
-		description: 'The retention policy action to perform',
 	},
 	{
 		displayName: 'Policy Name',
@@ -1378,7 +1375,6 @@ export const mailboxFields: INodeProperties[] = [
 			{ name: 'Delete', value: 'Delete' },
 		],
 		default: 'List',
-		description: 'The retention tag action to perform',
 	},
 	{
 		displayName: 'Tag Name',

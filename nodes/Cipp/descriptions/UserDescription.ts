@@ -142,7 +142,7 @@ export const userOperations: INodeProperties[] = [
 				name: 'List Sign-Ins',
 				value: 'listSignIns',
 				description: 'List user sign-in events for security monitoring',
-				action: 'List sign-ins',
+				action: 'List sign ins',
 			},
 			{
 				name: 'Offboard',
@@ -439,7 +439,7 @@ export const userFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				placeholder: 'e.g. user GUID',
-				description: 'Copy group memberships from this user (GUID). CIPP wraps as {value: id}.',
+				description: 'Copy group memberships from this user (GUID). CIPP wraps as {value: ID}.',
 			},
 			{
 				displayName: 'Country',
@@ -467,7 +467,6 @@ export const userFields: INodeProperties[] = [
 				name: 'jobTitle',
 				type: 'string',
 				default: '',
-				description: 'Job title',
 			},
 			{
 				displayName: 'Mail Nickname',
@@ -520,7 +519,7 @@ export const userFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				placeholder: 'e.g. manager GUID',
-				description: 'Set manager for the new user (GUID). CIPP wraps as {value: id}.',
+				description: 'Set manager for the new user (GUID). CIPP wraps as {value: ID}.',
 			},
 			{
 				displayName: 'State',
@@ -534,7 +533,6 @@ export const userFields: INodeProperties[] = [
 				name: 'streetAddress',
 				type: 'string',
 				default: '',
-				description: 'Street address',
 			},
 			{
 				displayName: 'Usage Location',
@@ -653,7 +651,7 @@ export const userFields: INodeProperties[] = [
 				description: 'Convert the mailbox to a shared mailbox',
 			},
 			{
-				displayName: 'Hide from GAL',
+				displayName: 'Hide From GAL',
 				name: 'HideFromGAL',
 				type: 'boolean',
 				default: false,
@@ -727,7 +725,6 @@ export const userFields: INodeProperties[] = [
 			{
 				name: 'Company Name',
 				value: 'companyName',
-				description: 'Company name',
 			},
 			{
 				name: 'Country',
@@ -767,7 +764,6 @@ export const userFields: INodeProperties[] = [
 			{
 				name: 'Job Title',
 				value: 'jobTitle',
-				description: 'Job title',
 			},
 			{
 				name: 'Last Name',
@@ -802,7 +798,6 @@ export const userFields: INodeProperties[] = [
 			{
 				name: 'Office Location',
 				value: 'officeLocation',
-				description: 'Office location',
 			},
 			{
 				name: 'On-Premises Sync',
@@ -832,7 +827,6 @@ export const userFields: INodeProperties[] = [
 			{
 				name: 'Street Address',
 				value: 'streetAddress',
-				description: 'Street address',
 			},
 			{
 				name: 'Usage Location',

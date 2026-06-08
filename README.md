@@ -21,6 +21,7 @@ This node provides full integration with the CIPP API, enabling automation of:
 - **Intune** - Applications, Autopilot, device actions
 - **Teams & SharePoint** - Teams, sites, voice numbers, shifts scheduling
 - **Security & Compliance** - Defender alerts, incidents
+- **CIPP v10.5 APIs** - Purview compliance, enrollment profiles, mailbox restores, alert snoozing, license reports
 - **Tools** - Breach search, Graph API requests, ExecGraphRequest
 - **CIPP System** - Scheduled jobs, backups
 
@@ -77,6 +78,7 @@ For detailed authentication setup, see the [CIPP API Documentation](https://docs
 | **Voice**          | Get Phone Numbers, Get Locations, Assign/Unassign Numbers                                                                                                     |
 | **Scheduled Item** | Add, Get Many, Remove                                                                                                                                         |
 | **Backup**         | Get Many, Run, Restore, Set Auto-Backup                                                                                                                       |
+| **CIPP v10.5**     | Purview compliance policy/SIT/sensitivity label actions, enrollment profile actions, mailbox restore/CAS/HVE reports, alert snoozing, package tags, license reports |
 | **Tools**          | Breach Search (Account/Tenant), Exec Graph Request, Graph Request (List), Graph Request (Exec)                                                                |
 
 ## Example Usage
@@ -130,6 +132,17 @@ Endpoint: users
 $select: id,displayName,userPrincipalName
 $filter: startsWith(displayName,'John')
 ```
+
+### CIPP v10.5 APIs
+
+```
+Resource: CIPP v10.5
+Operation: List Licenses Report
+Tenant: Select from dropdown
+Return All: true
+```
+
+Complex CIPP v10.5 create/edit/action operations use a validated JSON body so requests can match CIPP's current API fields without the node guessing incomplete schemas. The node only allows the enumerated CIPP v10.5 endpoints, validates query/body JSON objects, and enforces a maximum serialized body size.
 
 ### Teams Shifts (Dedicated Resource)
 

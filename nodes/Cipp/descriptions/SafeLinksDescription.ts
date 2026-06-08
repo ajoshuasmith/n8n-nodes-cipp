@@ -21,7 +21,7 @@ export const safeLinksOperations: INodeProperties[] = [
 				name: 'Add Policy',
 				value: 'addPolicy',
 				description: 'Create a new Safe Links policy',
-				action: 'Add Safe Links policy',
+				action: 'Add safe links policy',
 			},
 			{
 				name: 'Add Policy From Template',

@@ -116,7 +116,6 @@ export const shiftOperations: INodeProperties[] = [
 			{
 				name: 'List Scheduling Groups',
 				value: 'listSchedulingGroups',
-				description: 'List scheduling groups',
 				action: 'List scheduling groups',
 			},
 			{
@@ -327,7 +326,7 @@ export const shiftFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		placeholder: 'e.g. user-object-id or UPN',
+		placeholder: 'e.g. user-object-ID or UPN',
 		description: 'The user to assign the shift to',
 	},
 
@@ -628,7 +627,7 @@ export const shiftFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		placeholder: 'user-id-1, user-id-2',
+		placeholder: 'user-ID-1, user-ID-2',
 		description: 'Comma-separated list of user IDs to include in the group',
 	},
 

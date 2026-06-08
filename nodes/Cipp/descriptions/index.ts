@@ -42,6 +42,7 @@ import { teamFields, teamOperations, voiceFields, voiceOperations } from './Team
 import { tenantFields, tenantOperations } from './TenantDescription';
 import { testingFields, testingOperations } from './TestingDescription';
 import { userFields, userOperations } from './UserDescription';
+import { v105Fields, v105Operations } from './V105Description';
 
 export const operationFields = [
 	...alertOperations,
@@ -70,6 +71,7 @@ export const operationFields = [
 	...testingOperations,
 	...toolsOperations,
 	...userOperations,
+	...v105Operations,
 	...voiceOperations,
 ];
 
@@ -100,5 +102,6 @@ export const resourceFields = [
 	...testingFields,
 	...toolsFields,
 	...userFields,
+	...v105Fields,
 	...voiceFields,
 ];
