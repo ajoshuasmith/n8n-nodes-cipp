@@ -2443,13 +2443,19 @@ export class Cipp implements INodeType {
 					} else if (operation === 'getSites') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const siteType = this.getNodeParameter('siteType', i) as string;
+						const useReportDB = this.getNodeParameter('useReportDB', i, false) as boolean;
+
+						const sitesQuery: IDataObject = { tenantFilter, type: siteType };
+						if (useReportDB) {
+							sitesQuery.UseReportDB = true;
+						}
 
 						responseData = await cippApiRequest.call(
 							this,
 							'GET',
 							'/api/ListSites',
 							{},
-							{ tenantFilter, type: siteType },
+							sitesQuery,
 						);
 
 						if (Array.isArray(responseData) && !returnAll) {
@@ -4256,7 +4262,8 @@ export class Cipp implements INodeType {
 						}
 					} else if (operation === 'listSharepointAdminUrl') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharepointAdminUrl', {}, { tenantFilter });
+						// ReturnUrl=true makes the endpoint return JSON ({ AdminUrl }) instead of a 302 redirect to the admin center
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharepointAdminUrl', {}, { tenantFilter, ReturnUrl: true });
 						if (Array.isArray(responseData) && !returnAll) {
 							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
 						}
