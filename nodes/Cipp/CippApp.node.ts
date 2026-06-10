@@ -21,7 +21,7 @@ import {
 
 import { operationFields, resourceFields } from './descriptions';
 
-export class Cipp implements INodeType {
+export class CippApp implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'CIPP.app',
 		name: 'cippApp',
