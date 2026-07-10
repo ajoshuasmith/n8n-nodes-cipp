@@ -43,6 +43,7 @@ import { tenantFields, tenantOperations } from './TenantDescription';
 import { testingFields, testingOperations } from './TestingDescription';
 import { userFields, userOperations } from './UserDescription';
 import { v105Fields, v105Operations } from './V105Description';
+import { v106Fields, v106Operations } from './V106Description';
 
 export const operationFields = [
 	...alertOperations,
@@ -72,6 +73,7 @@ export const operationFields = [
 	...toolsOperations,
 	...userOperations,
 	...v105Operations,
+	...v106Operations,
 	...voiceOperations,
 ];
 
@@ -103,5 +105,6 @@ export const resourceFields = [
 	...toolsFields,
 	...userFields,
 	...v105Fields,
+	...v106Fields,
 	...voiceFields,
 ];

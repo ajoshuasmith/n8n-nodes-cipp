@@ -75,6 +75,11 @@ export class CippApp implements INodeType {
 						description: 'Use CIPP v10.5 API additions',
 					},
 					{
+						name: 'CIPP v10.6',
+						value: 'cippV106',
+						description: 'Use CIPP v10.6 API additions',
+					},
+					{
 						name: 'Conditional Access',
 						value: 'conditionalAccess',
 						description: 'Manage conditional access policies and named locations',
@@ -423,6 +428,40 @@ export class CippApp implements INodeType {
 			setCasMailbox: { method: 'POST', endpoint: '/api/ExecSetCASMailbox' },
 			setPackageTag: { method: 'POST', endpoint: '/api/ExecSetPackageTag' },
 			snoozeAlert: { method: 'POST', endpoint: '/api/ExecSnoozeAlert' },
+		};
+		const v106Endpoints: Record<string, { method: IHttpRequestMethods; endpoint: string }> = {
+			addIntunePolicyClone: { method: 'POST', endpoint: '/api/AddIntunePolicyClone' },
+			execAddCippCveException: { method: 'POST', endpoint: '/api/ExecAddCippCveException' },
+			execBackupReplicationConfig: { method: 'POST', endpoint: '/api/ExecBackupReplicationConfig' },
+			execBulkRemoveSharingLinks: { method: 'POST', endpoint: '/api/ExecBulkRemoveSharingLinks' },
+			execCopilotSettings: { method: 'POST', endpoint: '/api/ExecCopilotSettings' },
+			execGdapRepairRoleMappings: { method: 'POST', endpoint: '/api/ExecGDAPRepairRoleMappings' },
+			execRemoveCippCveException: { method: 'POST', endpoint: '/api/ExecRemoveCippCveException' },
+			execRemoveSpoExternalUser: { method: 'POST', endpoint: '/api/ExecRemoveSPOExternalUser' },
+			execRemoveSharingLink: { method: 'POST', endpoint: '/api/ExecRemoveSharingLink' },
+			execRemoveSiteUser: { method: 'POST', endpoint: '/api/ExecRemoveSiteUser' },
+			execRestoreDeletedSite: { method: 'POST', endpoint: '/api/ExecRestoreDeletedSite' },
+			execRestoreRecycleBinItems: { method: 'POST', endpoint: '/api/ExecRestoreRecycleBinItems' },
+			execSamCertificate: { method: 'POST', endpoint: '/api/ExecSAMCertificate' },
+			execSetLibraryPermission: { method: 'POST', endpoint: '/api/ExecSetLibraryPermission' },
+			execSetSiteProperties: { method: 'POST', endpoint: '/api/ExecSetSiteProperties' },
+			execShadowAiSanction: { method: 'POST', endpoint: '/api/ExecShadowAISanction' },
+			listAgent365PackageDetail: { method: 'GET', endpoint: '/api/ListAgent365PackageDetail' },
+			listAgent365Packages: { method: 'GET', endpoint: '/api/ListAgent365Packages' },
+			listAlertResults: { method: 'GET', endpoint: '/api/ListAlertResults' },
+			listAuditLogCoverage: { method: 'GET', endpoint: '/api/ListAuditLogCoverage' },
+			listCopilotSettings: { method: 'GET', endpoint: '/api/ListCopilotSettings' },
+			listCopilotUsage: { method: 'GET', endpoint: '/api/ListCopilotUsage' },
+			listCveManagement: { method: 'GET', endpoint: '/api/ListCVEManagement' },
+			listDeletedSites: { method: 'GET', endpoint: '/api/ListDeletedSites' },
+			listSensitiveInfoTypeRulePackage: { method: 'GET', endpoint: '/api/ListSensitiveInfoTypeRulePackage' },
+			listShadowAi: { method: 'GET', endpoint: '/api/ListShadowAI' },
+			listSharePointExternalUsers: { method: 'GET', endpoint: '/api/ListSharePointExternalUsers' },
+			listSharePointSharing: { method: 'GET', endpoint: '/api/ListSharePointSharing' },
+			listSiteLibraries: { method: 'GET', endpoint: '/api/ListSiteLibraries' },
+			listSiteProperties: { method: 'GET', endpoint: '/api/ListSiteProperties' },
+			listSiteRecycleBin: { method: 'GET', endpoint: '/api/ListSiteRecycleBin' },
+			listSpoVersionCleanup: { method: 'GET', endpoint: '/api/ListSPOVersionCleanup' },
 		};
 
 		for (let i = 0; i < items.length; i++) {
@@ -2885,6 +2924,45 @@ export class CippApp implements INodeType {
 							responseData = responseData.slice(0, limit);
 						}
 					}
+				}
+
+				// ==================== CIPP V10.6 ====================
+				else if (resource === 'cippV106') {
+					const config = v106Endpoints[operation];
+					if (!config) throw new NodeOperationError(this.getNode(), `Unsupported CIPP v10.6 operation: ${operation}`, { itemIndex: i });
+					const includeTenant = this.getNodeParameter('v106IncludeTenant', i) as boolean;
+					const query = parseJsonObjectPayload(this.getNodeParameter('v106QueryJson', i, '{}'), 'Query Parameters', i);
+					const advancedBody = config.method === 'GET' ? {} : parseJsonObjectPayload(this.getNodeParameter('v106BodyJson', i, '{}'), 'Advanced Body Overrides', i);
+					const body: IDataObject = {};
+					const splitV106Csv = (name: string): string[] => (this.getNodeParameter(name, i, '') as string).split(',').map((value) => value.trim()).filter(Boolean);
+					if (operation === 'execAddCippCveException') Object.assign(body, { cveId: this.getNodeParameter('v106CveId', i), exceptionType: this.getNodeParameter('v106CveExceptionType', i), applyTo: this.getNodeParameter('v106CveApplyTo', i), justification: this.getNodeParameter('v106CveJustification', i), expiryDate: this.getNodeParameter('v106CveExpiryDate', i, '') || undefined });
+					if (operation === 'execRemoveCippCveException') Object.assign(body, { cveId: this.getNodeParameter('v106CveId', i), removeScope: this.getNodeParameter('v106CveRemoveScope', i) });
+					if (operation === 'execCopilotSettings') Object.assign(body, { settingId: this.getNodeParameter('v106CopilotSettingId', i), value: this.getNodeParameter('v106CopilotValue', i) });
+					if (operation === 'execShadowAiSanction') Object.assign(body, { Tools: splitV106Csv('v106ShadowAiTools'), Action: this.getNodeParameter('v106ShadowAiAction', i) });
+					if (operation === 'execBulkRemoveSharingLinks') Object.assign(body, { SiteUrl: this.getNodeParameter('v106SiteUrl', i), Scope: this.getNodeParameter('v106SharingScope', i) });
+					if (operation === 'execRestoreDeletedSite') body.SiteUrl = this.getNodeParameter('v106SiteUrl', i);
+					if (operation === 'execRestoreRecycleBinItems') Object.assign(body, { SiteUrl: this.getNodeParameter('v106SiteUrl', i), Ids: splitV106Csv('v106RecycleBinItemIds') });
+					if (operation === 'execRemoveSharingLink') Object.assign(body, { DriveId: this.getNodeParameter('v106DriveId', i), ItemId: this.getNodeParameter('v106ItemId', i), PermissionId: this.getNodeParameter('v106PermissionId', i) });
+					if (operation === 'execRemoveSpoExternalUser') Object.assign(body, { EntraUserId: this.getNodeParameter('v106EntraUserId', i, ''), LoginName: this.getNodeParameter('v106LoginName', i, ''), SiteUrls: splitV106Csv('v106SiteUrls'), DisplayName: this.getNodeParameter('v106ExternalUserDisplayName', i, '') });
+					if (operation === 'execRemoveSiteUser') Object.assign(body, { user: { value: this.getNodeParameter('v106LoginName', i, '') }, SiteUrls: splitV106Csv('v106SiteUrls') });
+					if (operation === 'execSetLibraryPermission') Object.assign(body, { SiteUrl: this.getNodeParameter('v106SiteUrl', i), ListId: this.getNodeParameter('v106LibraryId', i), LibraryName: this.getNodeParameter('v106LibraryName', i), PermissionLevel: this.getNodeParameter('v106LibraryPermissionLevel', i), Users: splitV106Csv('v106LibraryUsers').map((value) => ({ value })), Groups: [...splitV106Csv('v106LibraryGroups').map((value) => ({ value, addedFields: { groupTypes: [] } })), ...splitV106Csv('v106LibraryM365Groups').map((value) => ({ value, addedFields: { groupTypes: ['Unified'] } }))] });
+					if (operation === 'execSetSiteProperties') Object.assign(body, { SiteUrl: this.getNodeParameter('v106SiteUrl', i), ...(this.getNodeParameter('v106SiteProperties', i, {}) as IDataObject) });
+					Object.assign(body, advancedBody);
+					if (operation === 'execRemoveSpoExternalUser' && !body.EntraUserId && !(body.SiteUrls as unknown[] | undefined)?.length) throw new NodeOperationError(this.getNode(), 'Provide an Entra User ID or at least one Site URL.', { itemIndex: i });
+					if (operation === 'execRemoveSiteUser' && (!(body.SiteUrls as unknown[] | undefined)?.length || !((body.user as IDataObject | undefined)?.value))) throw new NodeOperationError(this.getNode(), 'User Login Name and at least one Site URL are required.', { itemIndex: i });
+					if (operation === 'execSetLibraryPermission' && !(body.Users as unknown[] | undefined)?.length && !(body.Groups as unknown[] | undefined)?.length) throw new NodeOperationError(this.getNode(), 'Provide at least one user or group.', { itemIndex: i });
+					if (includeTenant) {
+						const tenantFilter = getResourceLocatorValue(this.getNodeParameter('tenantFilter', i) as IDataObject);
+						if (!tenantFilter) throw new NodeOperationError(this.getNode(), 'Tenant is required.', { itemIndex: i });
+						if (!query.tenantFilter) query.tenantFilter = tenantFilter;
+						if (!body.tenantFilter) body.tenantFilter = tenantFilter;
+					}
+					const options = this.getNodeParameter('v106Options', i, {}) as IDataObject;
+					const maxPayloadBytes = Number(options.maxPayloadBytes ?? 262144);
+					if (!Number.isFinite(maxPayloadBytes) || maxPayloadBytes <= 0) throw new NodeOperationError(this.getNode(), 'Max Payload Bytes must be a positive number.', { itemIndex: i });
+					if (new TextEncoder().encode(JSON.stringify(body)).length > maxPayloadBytes) throw new NodeOperationError(this.getNode(), `Payload exceeds Max Payload Bytes (${maxPayloadBytes}).`, { itemIndex: i });
+					responseData = await cippApiRequest.call(this, config.method, config.endpoint, body, query);
+					if (Array.isArray(responseData) && !(this.getNodeParameter('returnAll', i, true) as boolean)) responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
 				}
 
 				// ==================== TOOLS ====================

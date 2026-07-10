@@ -22,6 +22,7 @@ This node provides full integration with the CIPP API, enabling automation of:
 - **Teams & SharePoint** - Teams, sites, voice numbers, shifts scheduling
 - **Security & Compliance** - Defender alerts, incidents
 - **CIPP v10.5 APIs** - Purview compliance, enrollment profiles, mailbox restores, alert snoozing, license reports
+- **CIPP v10.6 APIs** - Copilot and Shadow AI, SharePoint sharing and recovery, CVE management, audit coverage, and Agent 365 reports
 - **Tools** - Breach search, Graph API requests, ExecGraphRequest
 - **CIPP System** - Scheduled jobs, backups
 
@@ -79,6 +80,7 @@ For detailed authentication setup, see the [CIPP API Documentation](https://docs
 | **Scheduled Item** | Add, Get Many, Remove                                                                                                                                         |
 | **Backup**         | Get Many, Run, Restore, Set Auto-Backup                                                                                                                       |
 | **CIPP v10.5**     | Purview compliance policy/SIT/sensitivity label actions, enrollment profile actions, mailbox restore/CAS/HVE reports, alert snoozing, package tags, license reports |
+| **CIPP v10.6**     | Copilot/Shadow AI settings and reports, SharePoint sharing/recovery/permissions, CVE exceptions, audit coverage, Agent 365, GDAP repair, and Intune policy cloning |
 | **Tools**          | Breach Search (Account/Tenant), Exec Graph Request, Graph Request (List), Graph Request (Exec)                                                                |
 
 ## Example Usage
@@ -143,6 +145,17 @@ Return All: true
 ```
 
 Complex CIPP v10.5 create/edit/action operations use a validated JSON body so requests can match CIPP's current API fields without the node guessing incomplete schemas. The node only allows the enumerated CIPP v10.5 endpoints, validates query/body JSON objects, and enforces a maximum serialized body size.
+
+### CIPP v10.6 APIs
+
+```
+Resource: CIPP v10.6
+Operation: List Copilot Usage
+Tenant: Select from dropdown
+Return All: true
+```
+
+CIPP v10.6 actions provide typed fields for Copilot settings, Shadow AI sanctions, CVE exceptions, and common SharePoint management operations. Advanced Body Overrides can supply additional CIPP request fields when needed. This resource requires CIPP v10.6.0 or newer and the permissions introduced by that release.
 
 ### Teams Shifts (Dedicated Resource)
 
