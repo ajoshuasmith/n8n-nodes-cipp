@@ -21,11 +21,11 @@ import {
 
 import { operationFields, resourceFields } from './descriptions';
 
-export class Cipp implements INodeType {
+export class CippApp implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'CIPP.app',
 		name: 'cippApp',
-		icon: 'file:cipp.png',
+		icon: 'file:cipp.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -68,6 +68,16 @@ export class Cipp implements INodeType {
 						name: 'Backup',
 						value: 'backup',
 						description: 'Manage CIPP backups',
+					},
+					{
+						name: 'CIPP v10.5',
+						value: 'cippV105',
+						description: 'Use CIPP v10.5 API additions',
+					},
+					{
+						name: 'CIPP v10.6',
+						value: 'cippV106',
+						description: 'Use CIPP v10.6 API additions',
 					},
 					{
 						name: 'Conditional Access',
@@ -130,7 +140,7 @@ export class Cipp implements INodeType {
 						description: 'Manage quarantined email messages',
 					},
 					{
-						name: 'Safe Links',
+						name: 'Safe Link',
 						value: 'safeLinks',
 						description: 'Manage Safe Links policies and templates',
 					},
@@ -145,7 +155,7 @@ export class Cipp implements INodeType {
 						description: 'Manage SharePoint sites, quotas, and settings',
 					},
 					{
-						name: 'Standards',
+						name: 'Standard',
 						value: 'standards',
 						description: 'Manage tenant standards, drift, BPA, and domain analyser',
 					},
@@ -160,14 +170,14 @@ export class Cipp implements INodeType {
 						description: 'Manage Teams Shifts schedule — shifts, open shifts, groups, time off',
 					},
 					{
-						name: 'Testing',
-						value: 'testing',
-						description: 'Manage test runs, test reports, and available tests',
-					},
-					{
 						name: 'Tenant',
 						value: 'tenant',
 						description: 'List and manage tenants',
+					},
+					{
+						name: 'Testing',
+						value: 'testing',
+						description: 'Manage test runs, test reports, and available tests',
 					},
 					{
 						name: 'Tool',
@@ -212,17 +222,16 @@ export class Cipp implements INodeType {
 
 					const tokenBody = `grant_type=client_credentials&client_id=${encodeURIComponent(clientId)}&client_secret=${encodeURIComponent(clientSecret)}&scope=${encodeURIComponent(scope)}`;
 
-					const tokenResponse = (await this.helpers.request({
+					const tokenRequest = await fetch(tokenUrl, {
 						method: 'POST',
-						uri: tokenUrl,
 						headers: {
 							'Content-Type': 'application/x-www-form-urlencoded',
 						},
 						body: tokenBody,
-						json: true,
-					})) as IDataObject;
+					});
+					const tokenResponse = (await tokenRequest.json().catch(() => ({}))) as IDataObject;
 
-					if (!tokenResponse.access_token) {
+					if (!tokenRequest.ok || typeof tokenResponse.access_token !== 'string') {
 						return {
 							status: 'Error',
 							message: 'Failed to obtain access token from Azure AD. Check your Tenant ID, Client ID, and Client Secret.',
@@ -230,15 +239,20 @@ export class Cipp implements INodeType {
 					}
 
 					// Step 2: Test API connection with the token
-					await this.helpers.request({
+					const testRequest = await fetch(`${baseUrl}/api/ListTenants`, {
 						method: 'GET',
-						uri: `${baseUrl}/api/ListTenants`,
 						headers: {
 							Authorization: `Bearer ${tokenResponse.access_token}`,
 							Accept: 'application/json',
 						},
-						json: true,
 					});
+
+					if (!testRequest.ok) {
+						return {
+							status: 'Error',
+							message: `CIPP API test request failed with status ${testRequest.status}.`,
+						};
+					}
 
 					return {
 						status: 'OK',
@@ -370,6 +384,85 @@ export class Cipp implements INodeType {
 				.map((entry) => entry.trim())
 				.filter(Boolean);
 		};
+		const v105Endpoints: Record<string, { method: IHttpRequestMethods; endpoint: string }> = {
+			addAssignmentFilterTemplate: { method: 'POST', endpoint: '/api/AddAssignmentFilterTemplate' },
+			addDlpCompliancePolicy: { method: 'POST', endpoint: '/api/AddDlpCompliancePolicy' },
+			addEnrollment: { method: 'POST', endpoint: '/api/AddEnrollment' },
+			addGroupTeam: { method: 'POST', endpoint: '/api/AddGroupTeam' },
+			addRetentionCompliancePolicy: { method: 'POST', endpoint: '/api/AddRetentionCompliancePolicy' },
+			addSensitiveInfoType: { method: 'POST', endpoint: '/api/AddSensitiveInfoType' },
+			addSensitivityLabel: { method: 'POST', endpoint: '/api/AddSensitivityLabel' },
+			addUserBulk: { method: 'POST', endpoint: '/api/AddUserBulk' },
+			assignPolicy: { method: 'POST', endpoint: '/api/ExecAssignPolicy' },
+			editAssignmentFilter: { method: 'POST', endpoint: '/api/EditAssignmentFilter' },
+			editDlpCompliancePolicy: { method: 'POST', endpoint: '/api/EditDlpCompliancePolicy' },
+			editRetentionCompliancePolicy: { method: 'POST', endpoint: '/api/EditRetentionCompliancePolicy' },
+			editSensitiveInfoType: { method: 'POST', endpoint: '/api/EditSensitiveInfoType' },
+			editSensitivityLabel: { method: 'POST', endpoint: '/api/EditSensitivityLabel' },
+			execAssignmentFilter: { method: 'DELETE', endpoint: '/api/ExecAssignmentFilter' },
+			execMailboxRestore: { method: 'POST', endpoint: '/api/ExecMailboxRestore' },
+			execMcp: { method: 'POST', endpoint: '/api/ExecMcp' },
+			execSpoVersionCleanup: { method: 'POST', endpoint: '/api/ExecSPOVersionCleanup' },
+			listActiveSyncDevices: { method: 'GET', endpoint: '/api/ListActiveSyncDevices' },
+			listAndroidEnrollmentProfiles: { method: 'POST', endpoint: '/api/ListAndroidEnrollmentProfiles' },
+			listAppleEnrollmentProfiles: { method: 'POST', endpoint: '/api/ListAppleEnrollmentProfiles' },
+			listAssignmentFilterTemplates: { method: 'GET', endpoint: '/api/ListAssignmentFilterTemplates' },
+			listCspSku: { method: 'GET', endpoint: '/api/ListCSPsku' },
+			listDlpCompliancePolicy: { method: 'GET', endpoint: '/api/ListDlpCompliancePolicy' },
+			listHveAccounts: { method: 'GET', endpoint: '/api/ListHVEAccounts' },
+			listLicensesReport: { method: 'GET', endpoint: '/api/ListLicensesReport' },
+			listMailboxRestores: { method: 'GET', endpoint: '/api/ListMailboxRestores' },
+			listRetentionCompliancePolicy: { method: 'GET', endpoint: '/api/ListRetentionCompliancePolicy' },
+			listSensitiveInfoType: { method: 'GET', endpoint: '/api/ListSensitiveInfoType' },
+			listSensitivityLabel: { method: 'GET', endpoint: '/api/ListSensitivityLabel' },
+			listSnoozedAlerts: { method: 'GET', endpoint: '/api/ListSnoozedAlerts' },
+			patchUser: { method: 'PATCH', endpoint: '/api/PatchUser' },
+			removeAdminRole: { method: 'POST', endpoint: '/api/ExecRemoveAdminRole' },
+			removeAssignmentFilterTemplate: { method: 'POST', endpoint: '/api/RemoveAssignmentFilterTemplate' },
+			removeDlpCompliancePolicy: { method: 'POST', endpoint: '/api/RemoveDlpCompliancePolicy' },
+			removeEnrollmentProfile: { method: 'POST', endpoint: '/api/ExecRemoveEnrollmentProfile' },
+			removeRetentionCompliancePolicy: { method: 'POST', endpoint: '/api/RemoveRetentionCompliancePolicy' },
+			removeSensitiveInfoType: { method: 'POST', endpoint: '/api/RemoveSensitiveInfoType' },
+			removeSensitivityLabel: { method: 'POST', endpoint: '/api/RemoveSensitivityLabel' },
+			removeSnooze: { method: 'POST', endpoint: '/api/ExecRemoveSnooze' },
+			setCasMailbox: { method: 'POST', endpoint: '/api/ExecSetCASMailbox' },
+			setPackageTag: { method: 'POST', endpoint: '/api/ExecSetPackageTag' },
+			snoozeAlert: { method: 'POST', endpoint: '/api/ExecSnoozeAlert' },
+		};
+		const v106Endpoints: Record<string, { method: IHttpRequestMethods; endpoint: string }> = {
+			addIntunePolicyClone: { method: 'POST', endpoint: '/api/AddIntunePolicyClone' },
+			execAddCippCveException: { method: 'POST', endpoint: '/api/ExecAddCippCveException' },
+			execBackupReplicationConfig: { method: 'POST', endpoint: '/api/ExecBackupReplicationConfig' },
+			execBulkRemoveSharingLinks: { method: 'POST', endpoint: '/api/ExecBulkRemoveSharingLinks' },
+			execCopilotSettings: { method: 'POST', endpoint: '/api/ExecCopilotSettings' },
+			execGdapRepairRoleMappings: { method: 'POST', endpoint: '/api/ExecGDAPRepairRoleMappings' },
+			execRemoveCippCveException: { method: 'POST', endpoint: '/api/ExecRemoveCippCveException' },
+			execRemoveSpoExternalUser: { method: 'POST', endpoint: '/api/ExecRemoveSPOExternalUser' },
+			execRemoveSharingLink: { method: 'POST', endpoint: '/api/ExecRemoveSharingLink' },
+			execRemoveSiteUser: { method: 'POST', endpoint: '/api/ExecRemoveSiteUser' },
+			execRestoreDeletedSite: { method: 'POST', endpoint: '/api/ExecRestoreDeletedSite' },
+			execRestoreRecycleBinItems: { method: 'POST', endpoint: '/api/ExecRestoreRecycleBinItems' },
+			execSamCertificate: { method: 'POST', endpoint: '/api/ExecSAMCertificate' },
+			execSetLibraryPermission: { method: 'POST', endpoint: '/api/ExecSetLibraryPermission' },
+			execSetSiteProperties: { method: 'POST', endpoint: '/api/ExecSetSiteProperties' },
+			execShadowAiSanction: { method: 'POST', endpoint: '/api/ExecShadowAISanction' },
+			listAgent365PackageDetail: { method: 'GET', endpoint: '/api/ListAgent365PackageDetail' },
+			listAgent365Packages: { method: 'GET', endpoint: '/api/ListAgent365Packages' },
+			listAlertResults: { method: 'GET', endpoint: '/api/ListAlertResults' },
+			listAuditLogCoverage: { method: 'GET', endpoint: '/api/ListAuditLogCoverage' },
+			listCopilotSettings: { method: 'GET', endpoint: '/api/ListCopilotSettings' },
+			listCopilotUsage: { method: 'GET', endpoint: '/api/ListCopilotUsage' },
+			listCveManagement: { method: 'GET', endpoint: '/api/ListCVEManagement' },
+			listDeletedSites: { method: 'GET', endpoint: '/api/ListDeletedSites' },
+			listSensitiveInfoTypeRulePackage: { method: 'GET', endpoint: '/api/ListSensitiveInfoTypeRulePackage' },
+			listShadowAi: { method: 'GET', endpoint: '/api/ListShadowAI' },
+			listSharePointExternalUsers: { method: 'GET', endpoint: '/api/ListSharePointExternalUsers' },
+			listSharePointSharing: { method: 'GET', endpoint: '/api/ListSharePointSharing' },
+			listSiteLibraries: { method: 'GET', endpoint: '/api/ListSiteLibraries' },
+			listSiteProperties: { method: 'GET', endpoint: '/api/ListSiteProperties' },
+			listSiteRecycleBin: { method: 'GET', endpoint: '/api/ListSiteRecycleBin' },
+			listSpoVersionCleanup: { method: 'GET', endpoint: '/api/ListSPOVersionCleanup' },
+		};
 
 		for (let i = 0; i < items.length; i++) {
 			try {
@@ -431,7 +524,9 @@ export class Cipp implements INodeType {
 						// Strip out AssignedUsers and AssignedGroups if summaryOnly is enabled
 						if (licenseOptions.summaryOnly && Array.isArray(responseData)) {
 							responseData = (responseData as IDataObject[]).map((license) => {
-								const { AssignedUsers, AssignedGroups, ...summary } = license;
+								const summary = { ...license };
+								delete summary.AssignedUsers;
+								delete summary.AssignedGroups;
 								return summary;
 							});
 						}
@@ -1178,7 +1273,7 @@ export class Cipp implements INodeType {
 						let editData: IDataObject;
 						try {
 							editData = JSON.parse(editJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
 						}
 						if (editData.displayName) body.newDisplayName = editData.displayName as string;
@@ -1194,7 +1289,7 @@ export class Cipp implements INodeType {
 						let templateData: IDataObject;
 						try {
 							templateData = JSON.parse(templateJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Template JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddCATemplate', {
@@ -1245,7 +1340,7 @@ export class Cipp implements INodeType {
 							let locationData: IDataObject;
 							try {
 								locationData = JSON.parse(locationJson) as IDataObject;
-							} catch (e) {
+							} catch {
 								throw new NodeOperationError(this.getNode(), 'Location JSON must be valid JSON', { itemIndex: i });
 							}
 							responseData = await cippApiRequest.call(this, 'POST', '/api/ExecNamedLocation', {
@@ -2387,13 +2482,19 @@ export class Cipp implements INodeType {
 					} else if (operation === 'getSites') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const siteType = this.getNodeParameter('siteType', i) as string;
+						const useReportDB = this.getNodeParameter('useReportDB', i, false) as boolean;
+
+						const sitesQuery: IDataObject = { tenantFilter, type: siteType };
+						if (useReportDB) {
+							sitesQuery.UseReportDB = true;
+						}
 
 						responseData = await cippApiRequest.call(
 							this,
 							'GET',
 							'/api/ListSites',
 							{},
-							{ tenantFilter, type: siteType },
+							sitesQuery,
 						);
 
 						if (Array.isArray(responseData) && !returnAll) {
@@ -2579,7 +2680,7 @@ export class Cipp implements INodeType {
 						let policyData: IDataObject;
 						try {
 							policyData = JSON.parse(policyJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecNewSafeLinksPolicy', {
@@ -2593,7 +2694,7 @@ export class Cipp implements INodeType {
 						let policyData: IDataObject;
 						try {
 							policyData = JSON.parse(policyJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditSafeLinksPolicy', {
@@ -2613,7 +2714,7 @@ export class Cipp implements INodeType {
 						let templateData: IDataObject;
 						try {
 							templateData = JSON.parse(templateJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Template JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddSafeLinksPolicyTemplate', {
@@ -2626,7 +2727,7 @@ export class Cipp implements INodeType {
 						let templateData: IDataObject;
 						try {
 							templateData = JSON.parse(templateJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Template JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditSafeLinksPolicyTemplate', {
@@ -2742,6 +2843,126 @@ export class Cipp implements INodeType {
 							{},
 						);
 					}
+				}
+
+				// ==================== CIPP V10.5 ====================
+				else if (resource === 'cippV105') {
+					const config = v105Endpoints[operation];
+					if (!config) {
+						throw new NodeOperationError(
+							this.getNode(),
+							`Unsupported CIPP v10.5 operation: ${operation}`,
+							{ itemIndex: i },
+						);
+					}
+
+					const includeTenant = this.getNodeParameter('v105IncludeTenant', i) as boolean;
+					const query = parseJsonObjectPayload(
+						this.getNodeParameter('v105QueryJson', i, '{}'),
+						'Query Parameters',
+						i,
+					);
+					const body =
+						config.method === 'GET'
+							? {}
+							: parseJsonObjectPayload(
+									this.getNodeParameter('v105BodyJson', i, '{}'),
+									'Body',
+									i,
+								);
+
+					if (includeTenant) {
+						const tenantValue = this.getNodeParameter('tenantFilter', i) as IDataObject;
+						const tenantFilter = getResourceLocatorValue(tenantValue);
+
+						if (!tenantFilter) {
+							throw new NodeOperationError(this.getNode(), 'Tenant is required.', {
+								itemIndex: i,
+							});
+						}
+
+						if (!query.tenantFilter) {
+							query.tenantFilter = tenantFilter;
+						}
+
+						if (!body.tenantFilter) {
+							body.tenantFilter = tenantFilter;
+						}
+					}
+
+					const options = this.getNodeParameter('v105Options', i, {}) as IDataObject;
+					const maxPayloadBytes = Number(options.maxPayloadBytes ?? 262144);
+					if (!Number.isFinite(maxPayloadBytes) || maxPayloadBytes <= 0) {
+						throw new NodeOperationError(
+							this.getNode(),
+							'Max Payload Bytes must be a positive number.',
+							{ itemIndex: i },
+						);
+					}
+
+					const payloadBytes = new TextEncoder().encode(JSON.stringify(body)).length;
+					if (payloadBytes > maxPayloadBytes) {
+						throw new NodeOperationError(
+							this.getNode(),
+							`Payload is ${payloadBytes} bytes, which exceeds Max Payload Bytes (${maxPayloadBytes}).`,
+							{ itemIndex: i },
+						);
+					}
+
+					responseData = await cippApiRequest.call(
+						this,
+						config.method,
+						config.endpoint,
+						body,
+						query,
+					);
+
+					if (Array.isArray(responseData)) {
+						const returnAll = this.getNodeParameter('returnAll', i, true) as boolean;
+						if (!returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.slice(0, limit);
+						}
+					}
+				}
+
+				// ==================== CIPP V10.6 ====================
+				else if (resource === 'cippV106') {
+					const config = v106Endpoints[operation];
+					if (!config) throw new NodeOperationError(this.getNode(), `Unsupported CIPP v10.6 operation: ${operation}`, { itemIndex: i });
+					const includeTenant = this.getNodeParameter('v106IncludeTenant', i) as boolean;
+					const query = parseJsonObjectPayload(this.getNodeParameter('v106QueryJson', i, '{}'), 'Query Parameters', i);
+					const advancedBody = config.method === 'GET' ? {} : parseJsonObjectPayload(this.getNodeParameter('v106BodyJson', i, '{}'), 'Advanced Body Overrides', i);
+					const body: IDataObject = {};
+					const splitV106Csv = (name: string): string[] => (this.getNodeParameter(name, i, '') as string).split(',').map((value) => value.trim()).filter(Boolean);
+					if (operation === 'execAddCippCveException') Object.assign(body, { cveId: this.getNodeParameter('v106CveId', i), exceptionType: this.getNodeParameter('v106CveExceptionType', i), applyTo: this.getNodeParameter('v106CveApplyTo', i), justification: this.getNodeParameter('v106CveJustification', i), expiryDate: this.getNodeParameter('v106CveExpiryDate', i, '') || undefined });
+					if (operation === 'execRemoveCippCveException') Object.assign(body, { cveId: this.getNodeParameter('v106CveId', i), removeScope: this.getNodeParameter('v106CveRemoveScope', i) });
+					if (operation === 'execCopilotSettings') Object.assign(body, { settingId: this.getNodeParameter('v106CopilotSettingId', i), value: this.getNodeParameter('v106CopilotValue', i) });
+					if (operation === 'execShadowAiSanction') Object.assign(body, { Tools: splitV106Csv('v106ShadowAiTools'), Action: this.getNodeParameter('v106ShadowAiAction', i) });
+					if (operation === 'execBulkRemoveSharingLinks') Object.assign(body, { SiteUrl: this.getNodeParameter('v106SiteUrl', i), Scope: this.getNodeParameter('v106SharingScope', i) });
+					if (operation === 'execRestoreDeletedSite') body.SiteUrl = this.getNodeParameter('v106SiteUrl', i);
+					if (operation === 'execRestoreRecycleBinItems') Object.assign(body, { SiteUrl: this.getNodeParameter('v106SiteUrl', i), Ids: splitV106Csv('v106RecycleBinItemIds') });
+					if (operation === 'execRemoveSharingLink') Object.assign(body, { DriveId: this.getNodeParameter('v106DriveId', i), ItemId: this.getNodeParameter('v106ItemId', i), PermissionId: this.getNodeParameter('v106PermissionId', i) });
+					if (operation === 'execRemoveSpoExternalUser') Object.assign(body, { EntraUserId: this.getNodeParameter('v106EntraUserId', i, ''), LoginName: this.getNodeParameter('v106LoginName', i, ''), SiteUrls: splitV106Csv('v106SiteUrls'), DisplayName: this.getNodeParameter('v106ExternalUserDisplayName', i, '') });
+					if (operation === 'execRemoveSiteUser') Object.assign(body, { user: { value: this.getNodeParameter('v106LoginName', i, '') }, SiteUrls: splitV106Csv('v106SiteUrls') });
+					if (operation === 'execSetLibraryPermission') Object.assign(body, { SiteUrl: this.getNodeParameter('v106SiteUrl', i), ListId: this.getNodeParameter('v106LibraryId', i), LibraryName: this.getNodeParameter('v106LibraryName', i), PermissionLevel: this.getNodeParameter('v106LibraryPermissionLevel', i), Users: splitV106Csv('v106LibraryUsers').map((value) => ({ value })), Groups: [...splitV106Csv('v106LibraryGroups').map((value) => ({ value, addedFields: { groupTypes: [] } })), ...splitV106Csv('v106LibraryM365Groups').map((value) => ({ value, addedFields: { groupTypes: ['Unified'] } }))] });
+					if (operation === 'execSetSiteProperties') Object.assign(body, { SiteUrl: this.getNodeParameter('v106SiteUrl', i), ...(this.getNodeParameter('v106SiteProperties', i, {}) as IDataObject) });
+					Object.assign(body, advancedBody);
+					if (operation === 'execRemoveSpoExternalUser' && !body.EntraUserId && !(body.SiteUrls as unknown[] | undefined)?.length) throw new NodeOperationError(this.getNode(), 'Provide an Entra User ID or at least one Site URL.', { itemIndex: i });
+					if (operation === 'execRemoveSiteUser' && (!(body.SiteUrls as unknown[] | undefined)?.length || !((body.user as IDataObject | undefined)?.value))) throw new NodeOperationError(this.getNode(), 'User Login Name and at least one Site URL are required.', { itemIndex: i });
+					if (operation === 'execSetLibraryPermission' && !(body.Users as unknown[] | undefined)?.length && !(body.Groups as unknown[] | undefined)?.length) throw new NodeOperationError(this.getNode(), 'Provide at least one user or group.', { itemIndex: i });
+					if (includeTenant) {
+						const tenantFilter = getResourceLocatorValue(this.getNodeParameter('tenantFilter', i) as IDataObject);
+						if (!tenantFilter) throw new NodeOperationError(this.getNode(), 'Tenant is required.', { itemIndex: i });
+						if (!query.tenantFilter) query.tenantFilter = tenantFilter;
+						if (!body.tenantFilter) body.tenantFilter = tenantFilter;
+					}
+					const options = this.getNodeParameter('v106Options', i, {}) as IDataObject;
+					const maxPayloadBytes = Number(options.maxPayloadBytes ?? 262144);
+					if (!Number.isFinite(maxPayloadBytes) || maxPayloadBytes <= 0) throw new NodeOperationError(this.getNode(), 'Max Payload Bytes must be a positive number.', { itemIndex: i });
+					if (new TextEncoder().encode(JSON.stringify(body)).length > maxPayloadBytes) throw new NodeOperationError(this.getNode(), `Payload exceeds Max Payload Bytes (${maxPayloadBytes}).`, { itemIndex: i });
+					responseData = await cippApiRequest.call(this, config.method, config.endpoint, body, query);
+					if (Array.isArray(responseData) && !(this.getNodeParameter('returnAll', i, true) as boolean)) responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
 				}
 
 				// ==================== TOOLS ====================
@@ -3557,7 +3778,7 @@ export class Cipp implements INodeType {
 						let policyData: IDataObject;
 						try {
 							policyData = JSON.parse(policyJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddSpamFilter', {
@@ -3569,7 +3790,7 @@ export class Cipp implements INodeType {
 						let policyData: IDataObject;
 						try {
 							policyData = JSON.parse(policyJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Policy JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditSpamFilter', {
@@ -3593,7 +3814,7 @@ export class Cipp implements INodeType {
 						let ruleData: IDataObject;
 						try {
 							ruleData = JSON.parse(ruleJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Rule JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddTransportRule', {
@@ -3605,7 +3826,7 @@ export class Cipp implements INodeType {
 						let ruleData: IDataObject;
 						try {
 							ruleData = JSON.parse(ruleJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Rule JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditTransportRule', {
@@ -3629,7 +3850,7 @@ export class Cipp implements INodeType {
 						let connectorData: IDataObject;
 						try {
 							connectorData = JSON.parse(connectorJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Connector JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddExConnector', {
@@ -3641,7 +3862,7 @@ export class Cipp implements INodeType {
 						let connectorData: IDataObject;
 						try {
 							connectorData = JSON.parse(connectorJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Connector JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditExConnector', {
@@ -3665,7 +3886,7 @@ export class Cipp implements INodeType {
 						let filterData: IDataObject;
 						try {
 							filterData = JSON.parse(filterJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Filter JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddConnectionFilter', {
@@ -3683,7 +3904,7 @@ export class Cipp implements INodeType {
 						let filterData: IDataObject;
 						try {
 							filterData = JSON.parse(filterJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Filter JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditAntiPhishingFilter', {
@@ -3701,7 +3922,7 @@ export class Cipp implements INodeType {
 						let filterData: IDataObject;
 						try {
 							filterData = JSON.parse(filterJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Filter JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditMalwareFilter', {
@@ -3719,7 +3940,7 @@ export class Cipp implements INodeType {
 						let blockListData: IDataObject;
 						try {
 							blockListData = JSON.parse(blockListJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Block List JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddTenantAllowBlockList', {
@@ -3731,7 +3952,7 @@ export class Cipp implements INodeType {
 						let blockListData: IDataObject;
 						try {
 							blockListData = JSON.parse(blockListJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Block List JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/RemoveTenantAllowBlockList', {
@@ -3766,7 +3987,7 @@ export class Cipp implements INodeType {
 						if (additionalJson && additionalJson !== '{}') {
 							try {
 								additionalData = JSON.parse(additionalJson) as IDataObject;
-							} catch (e) {
+							} catch {
 								throw new NodeOperationError(this.getNode(), 'Additional JSON must be valid JSON', { itemIndex: i });
 							}
 						}
@@ -3782,7 +4003,7 @@ export class Cipp implements INodeType {
 						let roomData: IDataObject;
 						try {
 							roomData = JSON.parse(roomJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Room JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditRoomMailbox', {
@@ -3810,7 +4031,7 @@ export class Cipp implements INodeType {
 						let equipmentData: IDataObject;
 						try {
 							equipmentData = JSON.parse(equipmentJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Equipment JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditEquipmentMailbox', {
@@ -3838,7 +4059,7 @@ export class Cipp implements INodeType {
 						let roomListData: IDataObject;
 						try {
 							roomListData = JSON.parse(roomListJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Room List JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditRoomList', {
@@ -3897,7 +4118,7 @@ export class Cipp implements INodeType {
 						let standardsData: IDataObject;
 						try {
 							standardsData = JSON.parse(standardsJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Standards JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddStandardsDeploy', {
@@ -3921,7 +4142,7 @@ export class Cipp implements INodeType {
 						let templateData: IDataObject;
 						try {
 							templateData = JSON.parse(templateJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Template JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddStandardsTemplate', {
@@ -3982,7 +4203,7 @@ export class Cipp implements INodeType {
 						let driftData: IDataObject;
 						try {
 							driftData = JSON.parse(driftJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Drift JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecDriftClone', {
@@ -4007,7 +4228,7 @@ export class Cipp implements INodeType {
 						let scriptData: IDataObject;
 						try {
 							scriptData = JSON.parse(scriptJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Script JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/EditIntuneScript', {
@@ -4043,7 +4264,7 @@ export class Cipp implements INodeType {
 						let filterData: IDataObject;
 						try {
 							filterData = JSON.parse(filterJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Filter JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddAssignmentFilter', {
@@ -4061,7 +4282,7 @@ export class Cipp implements INodeType {
 						let settingData: IDataObject;
 						try {
 							settingData = JSON.parse(settingJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Setting JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddIntuneReusableSetting', {
@@ -4085,7 +4306,7 @@ export class Cipp implements INodeType {
 						let appData: IDataObject;
 						try {
 							appData = JSON.parse(appJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'App JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddWin32ScriptApp', {
@@ -4119,7 +4340,8 @@ export class Cipp implements INodeType {
 						}
 					} else if (operation === 'listSharepointAdminUrl') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharepointAdminUrl', {}, { tenantFilter });
+						// ReturnUrl=true makes the endpoint return JSON ({ AdminUrl }) instead of a 302 redirect to the admin center
+						responseData = await cippApiRequest.call(this, 'GET', '/api/ListSharepointAdminUrl', {}, { tenantFilter, ReturnUrl: true });
 						if (Array.isArray(responseData) && !returnAll) {
 							responseData = responseData.slice(0, this.getNodeParameter('limit', i) as number);
 						}
@@ -4147,7 +4369,7 @@ export class Cipp implements INodeType {
 						let testData: IDataObject;
 						try {
 							testData = JSON.parse(testJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Test JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/ExecTestRun', {
@@ -4165,7 +4387,7 @@ export class Cipp implements INodeType {
 						let reportData: IDataObject;
 						try {
 							reportData = JSON.parse(reportJson) as IDataObject;
-						} catch (e) {
+						} catch {
 							throw new NodeOperationError(this.getNode(), 'Report JSON must be valid JSON', { itemIndex: i });
 						}
 						responseData = await cippApiRequest.call(this, 'POST', '/api/AddTestReport', {

@@ -85,7 +85,7 @@ async function getAccessToken(credentials: ICredentialDataDecryptedObject): Prom
 export class CippApi implements ICredentialType {
 	name = 'cippApi';
 	displayName = 'CIPP.app API';
-	icon: Icon = 'file:cipp.png';
+	icon: Icon = 'file:cipp.svg';
 	documentationUrl = 'https://docs.cipp.app/api-documentation/setup-and-authentication';
 	genericAuth = true;
 

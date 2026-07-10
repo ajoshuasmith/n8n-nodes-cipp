@@ -46,7 +46,7 @@ export const conditionalAccessOperations: INodeProperties[] = [
 				name: 'CA Policy Check',
 				value: 'caCheck',
 				description: 'Test or validate a conditional access policy',
-				action: 'CA policy check',
+				action: 'Ca policy check',
 			},
 			{
 				name: 'Edit Policy',
@@ -411,7 +411,6 @@ export const conditionalAccessFields: INodeProperties[] = [
 			{ name: 'Delete', value: 'Delete' },
 		],
 		default: 'Update',
-		description: 'The action to perform on the named location',
 	},
 	{
 		displayName: 'Location JSON',

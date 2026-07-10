@@ -27,8 +27,7 @@ export const identityOperations: INodeProperties[] = [
 			{
 				name: 'List Azure AD Connect Status',
 				value: 'listAzureAdConnectStatus',
-				description: 'List Azure AD Connect status',
-				action: 'List Azure AD Connect status',
+				action: 'List azure ad connect status',
 			},
 			{
 				name: 'List Basic Auth',

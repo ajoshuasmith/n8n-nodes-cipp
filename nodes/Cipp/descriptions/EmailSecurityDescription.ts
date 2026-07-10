@@ -34,7 +34,7 @@ export const emailSecurityOperations: INodeProperties[] = [
 				name: 'Add Exchange Connector',
 				value: 'addExConnector',
 				description: 'Add an Exchange connector',
-				action: 'Add Exchange connector',
+				action: 'Add exchange connector',
 			},
 			{
 				name: 'Add Spam Filter',
@@ -58,13 +58,13 @@ export const emailSecurityOperations: INodeProperties[] = [
 				name: 'Edit Anti-Phishing Filter',
 				value: 'editAntiPhishingFilter',
 				description: 'Edit an anti-phishing filter policy',
-				action: 'Edit anti-phishing filter',
+				action: 'Edit anti phishing filter',
 			},
 			{
 				name: 'Edit Exchange Connector',
 				value: 'editExConnector',
 				description: 'Edit an Exchange connector',
-				action: 'Edit Exchange connector',
+				action: 'Edit exchange connector',
 			},
 			{
 				name: 'Edit Malware Filter',
@@ -88,7 +88,7 @@ export const emailSecurityOperations: INodeProperties[] = [
 				name: 'List Anti-Phishing Filters',
 				value: 'listAntiPhishingFilters',
 				description: 'List all anti-phishing filter policies',
-				action: 'List anti-phishing filters',
+				action: 'List anti phishing filters',
 			},
 			{
 				name: 'List Connection Filters',
@@ -100,7 +100,7 @@ export const emailSecurityOperations: INodeProperties[] = [
 				name: 'List Exchange Connectors',
 				value: 'listExchangeConnectors',
 				description: 'List all Exchange connectors',
-				action: 'List Exchange connectors',
+				action: 'List exchange connectors',
 			},
 			{
 				name: 'List Malware Filters',
@@ -112,7 +112,7 @@ export const emailSecurityOperations: INodeProperties[] = [
 				name: 'List Safe Attachments Filters',
 				value: 'listSafeAttachmentsFilters',
 				description: 'List all Safe Attachments filter policies',
-				action: 'List Safe Attachments filters',
+				action: 'List safe attachments filters',
 			},
 			{
 				name: 'List Spam Filter Templates',
@@ -142,7 +142,7 @@ export const emailSecurityOperations: INodeProperties[] = [
 				name: 'Remove Exchange Connector',
 				value: 'removeExConnector',
 				description: 'Remove an Exchange connector',
-				action: 'Remove Exchange connector',
+				action: 'Remove exchange connector',
 			},
 			{
 				name: 'Remove Spam Filter',

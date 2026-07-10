@@ -149,6 +149,20 @@ export const teamFields: INodeProperties[] = [
 		default: 'SharePointSiteUsage',
 		description: 'The type of sites to list',
 	},
+	{
+		displayName: 'Use Report DB (Cached)',
+		name: 'useReportDB',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['team'],
+				operation: ['getSites'],
+			},
+		},
+		default: false,
+		description:
+			'Whether to read from CIPP\'s cached report database instead of querying Microsoft live. Faster and required when listing across all tenants, but data may be slightly older.',
+	},
 
 	// Add Team fields
 	{

@@ -34,7 +34,7 @@ export const policyOperations: INodeProperties[] = [
 				name: 'List Defender TVM',
 				value: 'listDefenderTvm',
 				description: 'List Defender Threat and Vulnerability Management data',
-				action: 'List Defender TVM',
+				action: 'List defender tvm',
 			},
 			{
 				name: 'Remove',

@@ -20,10 +20,14 @@ Desktop.ini
 # npm
 .npm-cache/
 .npm/
+*.tgz
 *.log
 npm-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Local n8n runtime data
+.n8n/
 
 # Testing
 coverage/
