@@ -810,7 +810,8 @@ export class CippApp implements INodeType {
 						const scheduled = this.getNodeParameter('scheduledOffboard', i) as boolean;
 						const offboardOptions = this.getNodeParameter('offboardOptions', i, {}) as IDataObject;
 						const parsedUsers = parseJsonPayload(users, 'Users to Offboard', i);
-						const userValues = (Array.isArray(parsedUsers) ? parsedUsers : [parsedUsers])
+						const userEntries = Array.isArray(parsedUsers) ? parsedUsers : [parsedUsers];
+						const userValues = userEntries
 							.map((user) => {
 								if (typeof user === 'string') return user;
 								return (
@@ -833,15 +834,45 @@ export class CippApp implements INodeType {
 
 						const offboardBody: IDataObject = {
 							tenantFilter,
-							user: { value: userValues },
+							user: userValues.map((value) => ({ value })),
 						};
+						const supportedOffboardOptions = [
+							'DisableSignIn',
+							'RevokeSessions',
+							'ResetPass',
+							'RemoveGroups',
+							'RemoveLicenses',
+							'RemoveMobile',
+							'ConvertToShared',
+							'HideFromGAL',
+							'OOO',
+							'forward',
+							'OnedriveAccess',
+							'AccessAutomap',
+							'AccessNoAutomap',
+						];
+						for (const userEntry of userEntries) {
+							if (typeof userEntry !== 'object' || userEntry === null) continue;
+							for (const key of supportedOffboardOptions) {
+								const value = (userEntry as IDataObject)[key];
+								if (value !== undefined && value !== '' && value !== false) {
+									offboardBody[key] =
+										typeof value === 'object' && value !== null && 'value' in value
+											? (value as IDataObject).value
+											: value;
+								}
+							}
+						}
 						if (scheduled) {
 							const scheduledDate = this.getNodeParameter('scheduledOffboardDate', i) as string;
 							offboardBody.Scheduled = { enabled: true, date: scheduledDate };
 						}
 						for (const [key, value] of Object.entries(offboardOptions)) {
 							if (value !== undefined && value !== '' && value !== false) {
-								offboardBody[key] = value;
+								offboardBody[key] =
+									typeof value === 'object' && value !== null && 'value' in value
+										? (value as IDataObject).value
+										: value;
 							}
 						}
 
