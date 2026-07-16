@@ -644,6 +644,13 @@ export const userFields: INodeProperties[] = [
 				description: 'Remove all license assignments',
 			},
 			{
+				displayName: 'Remove Mobile Devices',
+				name: 'RemoveMobile',
+				type: 'boolean',
+				default: false,
+				description: 'Remove all mobile device partnerships for the user',
+			},
+			{
 				displayName: 'Convert to Shared Mailbox',
 				name: 'ConvertToShared',
 				type: 'boolean',
