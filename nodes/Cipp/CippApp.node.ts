@@ -865,7 +865,16 @@ export class CippApp implements INodeType {
 						}
 						if (scheduled) {
 							const scheduledDate = this.getNodeParameter('scheduledOffboardDate', i) as string;
-							offboardBody.Scheduled = { enabled: true, date: scheduledDate };
+							const scheduledDateMilliseconds = Date.parse(scheduledDate);
+							if (!Number.isFinite(scheduledDateMilliseconds) || scheduledDateMilliseconds <= 0) {
+								throw new NodeOperationError(
+									this.getNode(),
+									'Scheduled Time must be a valid date after January 1, 1970.',
+									{ itemIndex: i },
+								);
+							}
+							const scheduledDateUnix = Math.floor(scheduledDateMilliseconds / 1000);
+							offboardBody.Scheduled = { enabled: true, date: scheduledDateUnix };
 						}
 						for (const [key, value] of Object.entries(offboardOptions)) {
 							if (value !== undefined && value !== '' && value !== false) {
